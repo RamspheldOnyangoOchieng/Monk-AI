@@ -1,56 +1,54 @@
-import React, { useState, useEffect } from 'react';
 import {
-  Box,
-  Typography,
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  Button,
-  Chip,
-  IconButton,
-  Fade,
-  Slide,
-  Zoom,
-  useTheme,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Paper,
-  Link,
-  Divider,
-  Stepper,
-  Step,
-  StepLabel,
-  TextField,
-  Avatar,
-} from '@mui/material';
-import {
-  PlayArrow,
-  Pause,
-  NavigateNext,
-  NavigateBefore,
-  Code,
-  Security,
-  AutoFixHigh,
-  Psychology,
-  Speed,
-  Groups,
-  GitHub,
-  Rocket,
-  CheckCircleOutline,
-  Description,
-  Save,
-  Search,
-  Storage,
-  FolderOpen,
+    AutoFixHigh,
+    CheckCircleOutline,
+    Code,
+    Description,
+    FolderOpen,
+    GitHub,
+    Groups,
+    NavigateBefore,
+    NavigateNext,
+    Pause,
+    PlayArrow,
+    Psychology,
+    Rocket,
+    Save,
+    Search,
+    Security,
+    Speed,
+    Storage,
 } from '@mui/icons-material';
-import { motion, AnimatePresence } from 'framer-motion';
 import GitHubIcon from '@mui/icons-material/GitHub';
+import LanguageIcon from '@mui/icons-material/Language';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import TwitterIcon from '@mui/icons-material/Twitter';
-import LanguageIcon from '@mui/icons-material/Language';
+import {
+    Avatar,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    Container,
+    Divider,
+    Grid,
+    IconButton,
+    Link,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Paper,
+    Slide,
+    Step,
+    StepLabel,
+    Stepper,
+    TextField,
+    Typography,
+    useTheme
+} from '@mui/material';
+import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 
 interface Slide {
   id: number;
@@ -124,7 +122,12 @@ const VercelBlobImageUpload = ({ label, onUpload, initialUrl }: VercelBlobImageU
 // --- End VercelBlobImageUpload ---
 
 // --- TeamLinksCard Component ---
-const TeamLinksCard = ({ onSubmit, loading }) => {
+interface TeamLinksCardProps {
+  onSubmit: (data: { name: string; email: string; phone: string; linkedin: string; github: string }) => void;
+  loading: boolean;
+}
+
+const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
   const [form, setForm] = useState({
     name: '',
     email: '',
