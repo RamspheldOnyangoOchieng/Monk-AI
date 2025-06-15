@@ -143,7 +143,7 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
     setForm(f => ({ ...f, [field]: value }));
   };
 
-  const handlePhotoUpload = (url) => {
+  const handlePhotoUpload = (url: string) => {
     setForm(f => ({ ...f, photo_url: url }));
   };
 
