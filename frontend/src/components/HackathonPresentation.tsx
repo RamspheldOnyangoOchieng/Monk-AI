@@ -134,11 +134,11 @@ const VercelBlobImageUpload = ({ label, onUpload, initialUrl }: VercelBlobImageU
 
 // --- TeamLinksCard Component ---
 interface TeamLinksCardProps {
-  onSubmit: (data: { name: string; email: string; phone: string; linkedin: string; github: string }) => void;
+  onSubmit: (data: { name: string; email: string; phone: string; linkedin: string; github: string; photo_url?: string }) => void;
   loading: boolean;
 }
 
-type FormField = 'name' | 'email' | 'phone' | 'linkedin' | 'github';
+type FormField = 'name' | 'email' | 'phone' | 'linkedin' | 'github' | 'photo_url';
 
 const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
   const [form, setForm] = useState({
@@ -146,7 +146,8 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
     email: '',
     phone: '',
     linkedin: '',
-    github: ''
+    github: '',
+    photo_url: ''
   });
   const [error, setError] = useState('');
 
@@ -166,7 +167,7 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
     }
     setError('');
     await onSubmit(form);
-    setForm({ name: '', email: '', phone: '', linkedin: '', github: '' });
+    setForm({ name: '', email: '', phone: '', linkedin: '', github: '', photo_url: '' });
   };
 
   return (
