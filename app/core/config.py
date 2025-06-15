@@ -43,7 +43,7 @@ class Settings(BaseSettings):
     
     # Multi-Provider AI API Keys
     OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
-    GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
+    GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_GEMINI_API_KEY", "")))
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
     ANTHROPIC_API_KEY: str = os.getenv("ANTHROPIC_API_KEY", "")
     NOVITA_API_KEY: str = os.getenv("NOVITA_API_KEY", "")

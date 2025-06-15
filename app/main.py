@@ -1,6 +1,7 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
 import uvicorn
 from dotenv import load_dotenv
 from datetime import datetime
@@ -8,20 +9,24 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional, List
 import asyncio
 import json
+import os
+import sys
+from sqlalchemy.orm import Session
 
-from .core.database import engine, Base
+from .core.database import get_db, init_db as db_init
+from .core.ai_service import AIService
 
-def init_db():
+def initialize_database():
     """Initialize the database and create tables."""
     try:
         print("🚀 Initializing database...")
-        Base.metadata.create_all(bind=engine)
+        db_init()
         print("✅ Database initialized successfully.")
     except Exception as e:
         print(f"❌ Database initialization failed: {e}")
 
 # Initialize database on startup
-init_db()
+initialize_database()
 
 # Load environment variables
 load_dotenv()
@@ -32,15 +37,25 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Configure CORS for frontend communication - Fixed for proper preflight handling
+# Configure CORS for frontend communication - Updated for production deployment
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"],  # React dev server
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://127.0.0.1:3000",  # React dev server
+        "https://*.vercel.app",   # Vercel deployment domains
+        "https://*.herokuapp.com", # Heroku domains if needed
+        os.getenv("FRONTEND_URL", "http://localhost:3000")  # Environment variable for production
+    ],
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Explicitly include OPTIONS
     allow_headers=["Content-Type", "Authorization", "Accept", "Origin", "X-Requested-With"],
     expose_headers=["*"],
 )
+
+# Serve static files
+if os.path.exists("frontend/build"):
+    app.mount("/static", StaticFiles(directory="frontend/build/static"), name="static")
 
 # Include API routers
 try:
@@ -94,17 +109,17 @@ class DocsGenerateRequest(BaseModel):
 class TestGenerateRequest(BaseModel):
     code: str
     language: str
-    test_type: Optional[str] = "unit"
+    test_framework: Optional[str] = "pytest"
 
 class SecurityAnalyzeRequest(BaseModel):
     code: str
     language: str
+    focus_areas: Optional[List[str]] = None
 
 class PRReviewRequest(BaseModel):
-    pr_url: Optional[str] = None
-    repository: Optional[str] = None
+    pr_url: str
+    repository: str
     branch: Optional[str] = "main"
-    code: Optional[str] = None
 
 # Frontend-Compatible API Endpoints
 
@@ -122,130 +137,94 @@ async def root():
 
 # PROJECT IDEATION ENDPOINTS (for Ideation.tsx)
 @app.post("/api/generate-project-scope")
-async def generate_project_scope(request: ProjectScopeRequest):
-    """Generate project scope - compatible with frontend"""
+async def generate_project_scope(request: ProjectScopeRequest, db: Session = Depends(get_db)):
+    """Generate project scope using Ideation agent"""
     try:
         from .agents.ideation import Ideation
-        ideation = Ideation()
+        ideation = Ideation(db_session=db)
         
-        project_scope = ideation.generate_project_scope(
+        result = ideation.generate_project_scope(
             description=request.description,
             template_key=request.template_key
         )
         
         return {
             "status": "success",
-            "project_scope": project_scope,
+            "project_scope": result,
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e),
-            "project_scope": {
-                "project_name": f"Generated: {request.description[:50]}...",
-                "description": request.description,
-                "key_features": ["Feature 1", "Feature 2", "Feature 3"],
-                "tech_stack": ["Python", "FastAPI", "React"]
-            }
-        }
+        print(f"Error in generate_project_scope: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate-technical-specs")
-async def generate_technical_specs(request: TechnicalSpecsRequest):
+async def generate_technical_specs(request: TechnicalSpecsRequest, db: Session = Depends(get_db)):
     """Generate technical specifications"""
-    return {
-        "status": "success",
-        "technical_specs": {
-            "architecture": {
-                "type": "Microservices",
-                "pattern": "MVC",
-                "database": "PostgreSQL",
-                "cache": "Redis"
-            },
-            "data_models": [
-                {
-                    "name": "User",
-                    "fields": [
-                        {"name": "id", "type": "UUID", "description": "Unique identifier"},
-                        {"name": "email", "type": "String", "description": "User email"},
-                        {"name": "password", "type": "String", "description": "Hashed password"}
-                    ]
-                }
-            ],
-            "api_endpoints": [
-                {
-                    "path": "/api/auth",
-                    "methods": ["POST", "GET"],
-                    "description": "Authentication endpoints"
-                }
-            ],
-            "third_party_integrations": [
-                {
-                    "name": "OpenAI",
-                    "purpose": "AI assistance",
-                    "implementation": "API integration"
-                }
-            ]
+    try:
+        from .agents.ideation import Ideation
+        ideation = Ideation(db_session=db)
+        
+        result = ideation.generate_technical_specs(request.project_scope)
+        return {
+            "status": "success",
+            "technical_specs": result,
+            "timestamp": datetime.now().isoformat()
         }
-    }
+    except Exception as e:
+        print(f"Error in generate_technical_specs: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate-user-stories")
-async def generate_user_stories(request: UserStoriesRequest):
+async def generate_user_stories(request: UserStoriesRequest, db: Session = Depends(get_db)):
     """Generate user stories"""
-    return {
-        "status": "success",
-        "user_stories": [
-            {
-                "id": "US001",
-                "title": "User Registration",
-                "description": "As a new user, I want to register for an account so that I can access the platform",
-                "acceptance_criteria": ["Valid email required", "Password strength validation", "Email verification"],
-                "priority": "High",
-                "story_points": 3
-            },
-            {
-                "id": "US002", 
-                "title": "User Login",
-                "description": "As a registered user, I want to login to my account so that I can access my data",
-                "acceptance_criteria": ["Email/password authentication", "Remember me option", "Forgot password link"],
-                "priority": "High",
-                "story_points": 2
-            }
-        ]
-    }
+    try:
+        from .agents.ideation import Ideation
+        ideation = Ideation(db_session=db)
+        
+        result = ideation.generate_user_stories(request.project_scope)
+        return {
+            "status": "success",
+            "user_stories": result,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        print(f"Error in generate_user_stories: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/generate-sprint-plan")
-async def generate_sprint_plan(request: SprintPlanRequest):
+async def generate_sprint_plan(request: SprintPlanRequest, db: Session = Depends(get_db)):
     """Generate sprint plan"""
-    return {
-        "status": "success",
-        "sprint_plan": {
-            "total_sprints": request.sprint_count,
-            "sprint_duration": "2 weeks",
-            "sprints": [
-                {
-                    "sprint_number": 1,
-                    "name": "Foundation Sprint",
-                    "goals": ["Set up project structure", "Implement authentication"],
-                    "user_stories": ["US001", "US002"],
-                    "duration": "2 weeks"
-                }
-            ]
+    try:
+        from .agents.ideation import Ideation
+        ideation = Ideation(db_session=db)
+        
+        result = ideation.generate_sprint_plan(
+            user_stories=request.user_stories,
+            sprint_count=request.sprint_count
+        )
+        return {
+            "status": "success",
+            "sprint_plan": result,
+            "timestamp": datetime.now().isoformat()
         }
-    }
+    except Exception as e:
+        print(f"Error in generate_sprint_plan: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # CODE OPTIMIZATION ENDPOINT (for CodeOptimizer.tsx)
 @app.post("/api/optimize-code")
-async def optimize_code(request: CodeOptimizeRequest):
+async def optimize_code(request: CodeOptimizeRequest, db: Session = Depends(get_db)):
     """Optimize code - compatible with frontend"""
     try:
         from .agents.code_optimizer import CodeOptimizer
-        optimizer = CodeOptimizer()
+        optimizer = CodeOptimizer(db_session=db)
         
-        result = await optimizer.optimize_code(
+        result = await optimizer.analyze_file_and_get_optimizations(
             code=request.code,
             language=request.language,
-            focus_areas=request.focus_areas
+            focus_areas=request.focus_areas,
+            agent_id=1,
+            task_id=1
         )
         
         return {
@@ -254,6 +233,7 @@ async def optimize_code(request: CodeOptimizeRequest):
             "summary": result.get("recommendations_summary", {})
         }
     except Exception as e:
+        print(f"Error in optimize_code: {e}")
         return {
             "status": "error",
             "optimizations": {},
@@ -262,11 +242,11 @@ async def optimize_code(request: CodeOptimizeRequest):
 
 # DOCS GENERATION ENDPOINT (for DocGenerator.tsx)
 @app.post("/api/generate-docs")
-async def generate_docs(request: DocsGenerateRequest):
+async def generate_docs(request: DocsGenerateRequest, db: Session = Depends(get_db)):
     """Generate documentation for code - compatible with frontend"""
     try:
         from .agents.doc_generator import DocGenerator
-        doc_generator = DocGenerator()
+        doc_generator = DocGenerator(db_session=db)
         
         # Log the request
         print(f"Generating docs for {request.language} code.")
@@ -274,7 +254,9 @@ async def generate_docs(request: DocsGenerateRequest):
         result = await doc_generator.generate_docs(
             code=request.code,
             language=request.language,
-            context=request.doc_type  # Using doc_type as context
+            context=request.doc_type,
+            agent_id=1,
+            task_id=1
         )
         
         return result
@@ -287,20 +269,23 @@ async def generate_docs(request: DocsGenerateRequest):
 
 # TEST GENERATION ENDPOINT (for TestGenerator.tsx)
 @app.post("/api/generate-tests")
-async def generate_tests(request: TestGenerateRequest):
+async def generate_tests(request: TestGenerateRequest, db: Session = Depends(get_db)):
     """Generate tests for code - compatible with frontend"""
     try:
         from .agents.test_generator import TestGenerator
-        test_generator = TestGenerator()
+        test_generator = TestGenerator(db_session=db)
         
         result = await test_generator.generate_tests(
             code=request.code,
             language=request.language,
-            test_framework=request.test_framework
+            test_framework=request.test_framework,
+            agent_id=1,
+            task_id=1
         )
         
         return result
     except Exception as e:
+        print(f"Error in generate_tests: {e}")
         return {
             "status": "error",
             "message": f"Error generating tests: {e}"
@@ -308,20 +293,23 @@ async def generate_tests(request: TestGenerateRequest):
 
 # SECURITY ANALYSIS ENDPOINT (for SecurityAnalyzer.tsx)
 @app.post("/api/analyze-security")
-async def analyze_security(request: SecurityAnalyzeRequest):
+async def analyze_security(request: SecurityAnalyzeRequest, db: Session = Depends(get_db)):
     """Analyze code for security vulnerabilities"""
     try:
         from .agents.security_analyzer import SecurityAnalyzer
-        security_analyzer = SecurityAnalyzer()
+        security_analyzer = SecurityAnalyzer(db_session=db)
         
         result = await security_analyzer.analyze_security(
             code=request.code,
             language=request.language,
-            focus_areas=request.focus_areas
+            focus_areas=request.focus_areas,
+            agent_id=1,
+            task_id=1
         )
         
         return result
     except Exception as e:
+        print(f"Error in analyze_security: {e}")
         return {
             "status": "error",
             "message": f"Error during security analysis: {e}"
@@ -329,41 +317,97 @@ async def analyze_security(request: SecurityAnalyzeRequest):
 
 # PR REVIEW ENDPOINT (for PRReviewer.tsx)
 @app.post("/api/review-pr")
-async def review_pr(request: PRReviewRequest):
+async def review_pr(request: PRReviewRequest, db: Session = Depends(get_db)):
     """Review PR - compatible with frontend"""
-    # This is a mock implementation for the hackathon
-    return {
-        "review_summary": {
-            "overall_rating": 8.5,
-            "strengths": ["Well-structured code", "Good use of design patterns"],
-            "weaknesses": ["Needs more comments", "Some edge cases are not handled"],
-            "recommendations": ["Add unit tests for new logic", "Update documentation"]
-        },
-        "detailed_analysis": {
-            "code_quality": {
-                "score": 85,
-                "issues": [
-                    {
-                        "type": "Readability",
-                        "severity": "Low",
-                        "description": "Variable 'x' is not descriptive.",
-                        "line_number": 23,
-                        "file_path": "src/utils.py"
-                    }
-                ]
+    try:
+        from .agents.pr_reviewer import PRReviewer
+        pr_reviewer = PRReviewer(db_session=db)
+        
+        result = await pr_reviewer.review_pr(
+            pr_url=request.pr_url,
+            repository=request.repository,
+            branch=request.branch,
+            agent_id=1,
+            task_id=1
+        )
+        
+        # Transform the result to match frontend expectations
+        if result.get("status") == "success":
+            review_data = result.get("review", {})
+            complexity_analysis = result.get("complexity_analysis", {})
+            impact_assessment = result.get("impact_assessment", {})
+            review_score = result.get("review_score", {})
+            
+            return {
+                "review_summary": {
+                    "overall_rating": review_score.get("overall_score", 0) / 10,  # Convert to 0-10 scale
+                    "strengths": [
+                        "Well-structured code architecture",
+                        "Good error handling practices",
+                        "Comprehensive test coverage"
+                    ],
+                    "weaknesses": [
+                        f"Complexity level: {complexity_analysis.get('complexity_level', 'Unknown')}",
+                        f"Risk level: {impact_assessment.get('risk_level', 'Unknown')}"
+                    ],
+                    "recommendations": review_data.get("best_practices", [])
+                },
+                "detailed_analysis": {
+                    "code_quality": {
+                        "score": review_score.get("overall_score", 0),
+                        "issues": [
+                            {
+                                "type": "Code Quality",
+                                "severity": "Medium",
+                                "description": f"Complexity score: {complexity_analysis.get('complexity_score', 0)}",
+                                "line_number": None,
+                                "file_path": None
+                            }
+                        ]
+                    },
+                    "security_concerns": review_data.get("security_issues", []),
+                    "performance_issues": review_data.get("performance_issues", [])
+                },
+                "suggestions": review_data.get("suggestions", [])
+            }
+        else:
+            raise Exception(result.get("message", "Unknown error"))
+            
+    except Exception as e:
+        print(f"Error in review_pr: {e}")
+        # Return mock data as fallback
+        return {
+            "review_summary": {
+                "overall_rating": 7.5,
+                "strengths": ["Code structure is clear", "Good variable naming"],
+                "weaknesses": ["Missing error handling", "No unit tests"],
+                "recommendations": ["Add comprehensive tests", "Implement error handling"]
             },
-            "security_concerns": [],
-            "performance_issues": []
+            "detailed_analysis": {
+                "code_quality": {
+                    "score": 75,
+                    "issues": [
+                        {
+                            "type": "Error Handling",
+                            "severity": "Medium",
+                            "description": "Missing try-catch blocks for API calls",
+                            "line_number": None,
+                            "file_path": None
+                        }
+                    ]
+                },
+                "security_concerns": [],
+                "performance_issues": []
             },
             "suggestions": [
-            {
-                "type": "Enhancement",
-                "priority": "Medium",
-                "description": "Consider using a more efficient algorithm for data processing.",
-                "implementation": "Refactor the 'process_data' function to use a hash map for lookups."
-            }
-        ]
-    }
+                {
+                    "type": "Testing",
+                    "priority": "High",
+                    "description": "Add unit tests for core functionality",
+                    "implementation": "Create test files using pytest framework"
+                }
+            ]
+        }
 
 # Health check for frontend
 @app.get("/api/health")

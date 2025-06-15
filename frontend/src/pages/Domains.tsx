@@ -54,12 +54,21 @@ import axios from 'axios';
 
 // Mock data - replace with actual API calls in production
 const domainsMock: DomainRecord[] = [
+<<<<<<< HEAD
+  { 
+    id: 1, 
+    name: 'example.com', 
+    status: 'active' as const, 
+    sslStatus: 'valid' as const, 
+    sslExpiry: '2024-05-15', 
+=======
   {
     id: 1,
     name: 'example.com',
     status: 'active' as const,
     sslStatus: 'valid' as const,
     sslExpiry: '2024-12-31',
+>>>>>>> 3258ec8ed28032f9b41b5f58eb392e52109c83bb
     environment: 'production',
     createdAt: '2023-01-01',
     dnsRecords: [
@@ -77,12 +86,21 @@ const domainsMock: DomainRecord[] = [
       }
     ]
   },
+<<<<<<< HEAD
+  { 
+    id: 2, 
+    name: 'staging.example.com', 
+    status: 'active' as const, 
+    sslStatus: 'valid' as const, 
+    sslExpiry: '2024-04-20', 
+=======
   {
     id: 2,
     name: 'test.example.com',
     status: 'pending' as const,
     sslStatus: 'none' as const,
     sslExpiry: '2024-12-31',
+>>>>>>> 3258ec8ed28032f9b41b5f58eb392e52109c83bb
     environment: 'staging',
     createdAt: '2023-02-01',
     dnsRecords: [
@@ -93,7 +111,23 @@ const domainsMock: DomainRecord[] = [
         ttl: 3600
       }
     ]
+<<<<<<< HEAD
+  },
+  { 
+    id: 3, 
+    name: 'dev.example.com', 
+    status: 'inactive' as const, 
+    sslStatus: 'expired' as const, 
+    sslExpiry: '2023-12-01', 
+    environment: 'development',
+    createdAt: '2023-03-20',
+    dnsRecords: [
+      { type: 'A', name: '@', value: '192.168.1.3', ttl: 3600 },
+    ]
+  },
+=======
   }
+>>>>>>> 3258ec8ed28032f9b41b5f58eb392e52109c83bb
 ];
 
 interface DomainRecord {
@@ -291,9 +325,16 @@ const Domains: React.FC = () => {
         if (domain.id === editId) {
           return {
             ...domain,
+<<<<<<< HEAD
+            name: domainFormData.name,
+            environment: domainFormData.environment,
+            sslStatus: domainFormData.enableSSL ? ('valid' as const) : ('none' as const),
+            sslExpiry: domainFormData.enableSSL ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : '',
+=======
             name: editForm.name,
             environment: editForm.environment,
             sslStatus: editForm.sslStatus as 'none' | 'valid' | 'expired' | 'invalid'
+>>>>>>> 3258ec8ed28032f9b41b5f58eb392e52109c83bb
           };
         }
         return domain;
@@ -304,7 +345,31 @@ const Domains: React.FC = () => {
       
       setSnackbar({
         open: true,
+<<<<<<< HEAD
+        message: `Domain ${domainFormData.name} has been updated`,
+        severity: 'success'
+      });
+    } else {
+      // Add new domain
+      const newDomain: DomainRecord = {
+        id: Math.max(...domains.map(d => d.id)) + 1,
+        name: domainFormData.name,
+        status: 'pending' as const,
+        sslStatus: domainFormData.enableSSL ? ('valid' as const) : ('none' as const),
+        sslExpiry: domainFormData.enableSSL ? new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString().split('T')[0] : '',
+        environment: domainFormData.environment,
+        createdAt: new Date().toISOString().split('T')[0],
+        dnsRecords: [],
+      };
+      
+      setDomains([...domains, newDomain]);
+      
+      setSnackbar({
+        open: true,
+        message: `Domain ${domainFormData.name} has been added`,
+=======
         message: 'Domain updated successfully',
+>>>>>>> 3258ec8ed28032f9b41b5f58eb392e52109c83bb
         severity: 'success'
       });
       setShowDomainDialog(false);

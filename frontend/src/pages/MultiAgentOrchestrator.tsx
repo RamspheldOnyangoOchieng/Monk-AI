@@ -580,6 +580,41 @@ const MultiAgentOrchestrator = () => {
         setCanStop(false);
         setWorkflowProgress(100);
         
+        // Extract all generated files from the final workflow results
+        if (finalData.results) {
+          const allGeneratedFiles: Record<string, string> = {};
+          
+          // Iterate through all step results to collect generated files
+          Object.values(finalData.results).forEach((stepResult: any) => {
+            if (stepResult && typeof stepResult === 'object') {
+              // Extract files from various possible locations
+              const files = stepResult.files || stepResult.generated_files || {};
+              const code = stepResult.full_code || stepResult.generated_code;
+              
+              // Add individual code to files if available
+              if (code && typeof code === 'string') {
+                const filename = stepResult.filename || 'main.py';
+                allGeneratedFiles[filename] = code;
+              }
+              
+              // Add all files from this step
+              if (files && typeof files === 'object') {
+                Object.assign(allGeneratedFiles, files);
+              }
+            }
+          });
+          
+          // Also check if there are generated_files at the top level
+          if (finalData.generated_files) {
+            Object.assign(allGeneratedFiles, finalData.generated_files);
+          }
+          
+          // Update the generated code state with all collected files
+          if (Object.keys(allGeneratedFiles).length > 0) {
+            setGeneratedCode(prev => ({ ...prev, ...allGeneratedFiles }));
+          }
+        }
+        
         const workflowResult: WorkflowResult = {
           steps: finalData.results || {},
           timeline: [],
@@ -1896,6 +1931,21 @@ const MultiAgentOrchestrator = () => {
 
             {/* Completed Results */}
             {renderCompletedResults()}
+
+            {/* Generated Code Preview */}
+            {Object.keys(generatedCode).length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <CodePreview 
+                  files={generatedCode} 
+                  title="Generated Application Code" 
+                  language="python" 
+                />
+              </motion.div>
+            )}
 
             {/* Results Dialog */}
             {renderResultsDialog()}
