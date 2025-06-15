@@ -2,87 +2,68 @@ version: '3.8'
 
 services:
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.backend
     restart: always
-    environment:
-      - ENVIRONMENT=production
-      - PORT=8000
-      - HOST=0.0.0.0
-      - LOG_LEVEL=info
+    # Remove development volumes
     volumes:
       - ./data:/app/data
-      - ./logs:/app/logs
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    environment:
+      - DEBUG=false
+      - ENVIRONMENT=production
     deploy:
       resources:
         limits:
-          cpus: '1'
+          cpus: '0.75'
           memory: 1G
-    networks:
-      - monk-network
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
 
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile.frontend
     restart: always
-    volumes:
-      - ./frontend/build:/usr/share/nginx/html
-      - ./logs/frontend:/var/log/nginx
+    # Remove development volumes
+    volumes: []
     deploy:
       resources:
         limits:
           cpus: '0.5'
           memory: 512M
-    networks:
-      - monk-network
-
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    # Use production build variables if needed
+    environment:
+      - REACT_APP_API_URL=/api  # Assuming API is proxied through Nginx
+      
+  # Add a reverse proxy for production
   nginx:
-    image: nginx:1.25.3-alpine-slim
-    restart: always
+    image: nginx:alpine
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.prod.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./nginx/domains:/etc/nginx/domains:ro
-      - ./frontend/build:/usr/share/nginx/html
-      - ./logs/nginx:/var/log/nginx
-      - ./data/certbot/conf:/etc/letsencrypt:ro
-      - ./data/certbot/www:/var/www/certbot:ro
-      - ./data/ssl:/etc/nginx/ssl:ro
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/cache:/var/cache/nginx
     depends_on:
       - backend
       - frontend
+    restart: always
     deploy:
       resources:
         limits:
-          cpus: '0.5'
-          memory: 256M
-    networks:
-      - monk-network
-
-  certbot:
-    image: certbot/certbot:latest
-    restart: unless-stopped
-    volumes:
-      - ./data/certbot/conf:/etc/letsencrypt
-      - ./data/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
-    networks:
-      - monk-network
-
-networks:
-  monk-network:
-    driver: bridge
-
-volumes:
-  data:
-    driver: local
+          cpus: '0.25'
+          memory: 128M
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3 

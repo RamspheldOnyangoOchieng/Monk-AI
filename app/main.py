@@ -52,6 +52,14 @@ try:
 except Exception as e:
     print(f"❌ Failed to load workflow router: {e}")
 
+# Try to import and include FAQ router
+try:
+    from .api.routes.faqs import router as faqs_router
+    app.include_router(faqs_router, prefix="/api/faqs", tags=["faqs"])
+    print("✅ FAQs router loaded successfully")
+except Exception as e:
+    print(f"❌ Failed to load FAQs router: {e}")
+
 # Request/Response Models
 class ProjectScopeRequest(BaseModel):
     description: str

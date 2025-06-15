@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Production deployment script for Monk AI
-# This script sets up and starts the production environment
 
 set -e  # Exit on error
 
@@ -11,159 +10,77 @@ RED='\033[0;31m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Default values
-REBUILD=false
-DETACHED=false
-SELF_SIGNED=false
-DOMAIN=""
-EMAIL=""
-SETUP_SSL=false
+# Create required directories
+mkdir -p data nginx/ssl nginx/cache
 
-# Help function
-show_help() {
-    echo -e "${GREEN}Monk AI Production Deployment Script${NC}"
-    echo -e "Usage: $0 [options]"
-    echo -e "\nOptions:"
-    echo -e "  -r, --rebuild       Rebuild all containers"
-    echo -e "  -d, --detached      Run in detached mode"
-    echo -e "  -s, --self-signed   Generate self-signed SSL certificates (for testing only)"
-    echo -e "  --domain DOMAIN     Domain name for SSL certificate"
-    echo -e "  --email EMAIL       Email for SSL certificate registration"
-    echo -e "  -h, --help          Show this help message"
-}
-
-# Parse arguments
-while [[ $# -gt 0 ]]; do
-    key="$1"
-    case $key in
-        -r|--rebuild)
-            REBUILD=true
-            shift
-            ;;
-        -d|--detached)
-            DETACHED=true
-            shift
-            ;;
-        -s|--self-signed)
-            SELF_SIGNED=true
-            shift
-            ;;
-        --domain)
-            DOMAIN="$2"
-            SETUP_SSL=true
-            shift
-            shift
-            ;;
-        --email)
-            EMAIL="$2"
-            shift
-            shift
-            ;;
-        -h|--help)
-            show_help
-            exit 0
-            ;;
-        *)
-            echo -e "${RED}Unknown option: $1${NC}"
-            show_help
-            exit 1
-            ;;
-    esac
-done
-
-# Create necessary directories
-mkdir -p data/ssl
-mkdir -p data/certbot/conf
-mkdir -p data/certbot/www
-mkdir -p logs/nginx
-mkdir -p logs/frontend
-mkdir -p logs/backend
-mkdir -p nginx/domains
-
-# Check if .env file exists, if not create from example
-if [ ! -f ".env" ]; then
-    if [ -f ".env.example" ]; then
-        echo -e "${YELLOW}Creating .env file from .env.example${NC}"
+# Check if .env file exists
+if [ ! -f .env ]; then
+    echo -e "${RED}Error: .env file doesn't exist.${NC}"
+    echo -e "${YELLOW}Creating a production .env file...${NC}"
+    
+    if [ -f .env.production ]; then
+        cp .env.production .env
+        echo -e "${GREEN}Production .env file created.${NC}"
+    elif [ -f .env.example ]; then
         cp .env.example .env
-        echo -e "${YELLOW}Please update the .env file with your production settings${NC}"
-        echo -e "${YELLOW}You can use the environment manager: ./scripts/env-manager.sh --action setup --env prod${NC}"
+        echo -e "${YELLOW}Using example .env file. Please update with production values.${NC}"
+        sleep 2  # Give time to read the warning
     else
-        echo -e "${RED}Error: .env.example file not found${NC}"
+        echo -e "${RED}No .env templates found. Please create a .env file manually.${NC}"
         exit 1
     fi
 fi
 
-# SSL Certificate setup
-setup_ssl() {
-    if [ "$SETUP_SSL" = true ]; then
-        if [ -z "$DOMAIN" ]; then
-            echo -e "${RED}Error: Domain name is required for SSL setup${NC}"
-            exit 1
-        fi
-        
-        if [ "$SELF_SIGNED" = true ]; then
-            echo -e "${YELLOW}Generating self-signed SSL certificate for $DOMAIN${NC}"
-            echo -e "${RED}WARNING: Self-signed certificates should only be used for testing!${NC}"
-            
-            mkdir -p "data/ssl/$DOMAIN"
-            
-            # Generate self-signed certificate
-            openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
-                -keyout "data/ssl/$DOMAIN/privkey.pem" \
-                -out "data/ssl/$DOMAIN/fullchain.pem" \
-                -subj "/CN=$DOMAIN/O=Monk AI/C=US" \
-                -addext "subjectAltName=DNS:$DOMAIN,DNS:www.$DOMAIN"
-                
-            echo -e "${GREEN}Self-signed certificate generated for $DOMAIN${NC}"
-        else
-            if [ -z "$EMAIL" ]; then
-                echo -e "${RED}Error: Email is required for Let's Encrypt registration${NC}"
-                exit 1
-            fi
-            
-            echo -e "${YELLOW}Setting up Let's Encrypt certificate for $DOMAIN${NC}"
-            echo -e "${YELLOW}This will be handled by the certbot service after deployment${NC}"
-            echo -e "${YELLOW}Make sure your domain is pointing to this server and port 80 is open${NC}"
-            
-            # Create domain configuration
-            ./scripts/domain-setup.sh --domain "$DOMAIN" --env production --ssl true --force
-        fi
-    fi
-}
+# Process command line arguments
+REBUILD=false
 
-# Run the deployment
-deploy() {
-    # Build arguments
-    BUILD_ARGS=""
-    if [ "$REBUILD" = true ]; then
-        BUILD_ARGS="--build --no-cache"
-        echo -e "${YELLOW}Rebuilding all containers${NC}"
-    fi
-    
-    # Detached mode argument
-    DETACHED_ARG=""
-    if [ "$DETACHED" = true ]; then
-        DETACHED_ARG="-d"
-        echo -e "${YELLOW}Running in detached mode${NC}"
-    fi
-    
-    echo -e "${GREEN}Starting production deployment...${NC}"
-    
-    # Start the services using both docker-compose files
-    docker-compose -f docker-compose.yml -f docker-compose.prod.yml up $DETACHED_ARG $BUILD_ARGS
-    
-    # If not in detached mode, show instructions for stopping
-    if [ "$DETACHED" != true ]; then
-        echo -e "\n${YELLOW}To stop the services, press Ctrl+C${NC}"
-    else
-        echo -e "\n${GREEN}Services started in detached mode${NC}"
-        echo -e "${YELLOW}To view logs: docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f${NC}"
-        echo -e "${YELLOW}To stop: docker-compose -f docker-compose.yml -f docker-compose.prod.yml down${NC}"
-    fi
-}
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -r|--rebuild) REBUILD=true ;;
+        -h|--help)
+            echo "Usage: $0 [-r|--rebuild]"
+            echo "  -r, --rebuild   Force rebuilding of images"
+            echo "  -h, --help      Show this help message"
+            exit 0
+            ;;
+        *) echo "Unknown parameter: $1"; exit 1 ;;
+    esac
+    shift
+done
 
-# Main execution
-setup_ssl
-deploy
+# Check for SSL certificates
+if [ ! -f nginx/ssl/fullchain.pem ] || [ ! -f nginx/ssl/privkey.pem ]; then
+    echo -e "${YELLOW}Warning: SSL certificates not found in nginx/ssl/${NC}"
+    echo -e "${YELLOW}For production, please add proper SSL certificates${NC}"
+    echo -e "${YELLOW}For testing, creating self-signed certificates...${NC}"
+    
+    # Generate self-signed certificates for testing
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+        -keyout nginx/ssl/privkey.pem -out nginx/ssl/fullchain.pem \
+        -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+    
+    echo -e "${GREEN}Self-signed certificates created for testing.${NC}"
+    echo -e "${RED}DO NOT USE THESE IN ACTUAL PRODUCTION!${NC}"
+fi
 
-exit 0
+# Prepare environment
+echo -e "${GREEN}Setting up production environment...${NC}"
+
+# Build or pull the latest images
+if [ "$REBUILD" = true ]; then
+    echo -e "${YELLOW}Rebuilding containers from scratch...${NC}"
+    docker-compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+else
+    echo -e "${YELLOW}Using cached images when available...${NC}"
+fi
+
+# Start production environment
+echo -e "${GREEN}Starting production environment with Docker Compose...${NC}"
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# Display status
+echo -e "${GREEN}Production environment started in detached mode.${NC}"
+echo -e "${GREEN}Commands:${NC}"
+echo -e "  ${YELLOW}docker-compose -f docker-compose.yml -f docker-compose.prod.yml ps${NC}    - List containers"
+echo -e "  ${YELLOW}docker-compose -f docker-compose.yml -f docker-compose.prod.yml logs -f${NC} - View logs"
+echo -e "  ${YELLOW}docker-compose -f docker-compose.yml -f docker-compose.prod.yml down${NC}  - Stop environment" 

@@ -22,6 +22,7 @@ import DocGenerator from './pages/DocGenerator';
 import PRReviewer from './pages/PRReviewer';
 import LiveWorkflowDemo from './components/LiveWorkflowDemo';
 import Collaboration from './pages/Collaboration';
+import Observability from './pages/Observability';
 
 // Create stunning hackathon-ready theme
 const darkTheme = createTheme({
@@ -153,6 +154,9 @@ const App: React.FC = () => {
             
             {/* Collaboration */}
             <Route path="/collaboration" element={<Collaboration />} />
+            
+            {/* Observability */}
+            <Route path="/observability" element={<Observability />} />
             
             {/* Live Demo */}
             <Route path="/live-demo" element={<LiveWorkflowDemo />} />

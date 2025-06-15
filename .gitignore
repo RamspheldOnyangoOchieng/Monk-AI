@@ -49,3 +49,4 @@ htmlcov/
 .pytest_cache/ 
 .plan.md
 .DOC
+.misc

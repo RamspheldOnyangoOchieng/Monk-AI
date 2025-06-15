@@ -17,7 +17,8 @@ import {
   Security as SecurityIcon,
   RateReview as ReviewIcon,
   AutoAwesome as AutoAwesomeIcon,
-  Group as GroupIcon
+  Group as GroupIcon,
+  Visibility as VisibilityIcon
 } from '@mui/icons-material';
 
 interface NavigationItem {
@@ -81,6 +82,12 @@ const navigationItems: NavigationItem[] = [
     label: 'Collaboration',
     icon: <GroupIcon />,
     color: '#2196f3'
+  },
+  {
+    path: '/observability',
+    label: 'Observability',
+    icon: <VisibilityIcon />,
+    color: '#e91e63'
   }
 ];
 
