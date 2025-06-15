@@ -127,20 +127,19 @@ interface TeamLinksCardProps {
   loading: boolean;
 }
 
+type FormField = 'name' | 'email' | 'phone' | 'linkedin' | 'github';
+
 const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
   const [form, setForm] = useState({
     name: '',
     email: '',
-    photo_url: '',
-    github: '',
+    phone: '',
     linkedin: '',
-    twitter: '',
-    website: '',
-    other: '',
+    github: ''
   });
   const [error, setError] = useState('');
 
-  const handleChange = (field, value) => {
+  const handleChange = (field: FormField, value: string) => {
     setForm(f => ({ ...f, [field]: value }));
   };
 
@@ -156,7 +155,7 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
     }
     setError('');
     await onSubmit(form);
-    setForm({ name: '', email: '', photo_url: '', github: '', linkedin: '', twitter: '', website: '', other: '' });
+    setForm({ name: '', email: '', phone: '', linkedin: '', github: '' });
   };
 
   return (
