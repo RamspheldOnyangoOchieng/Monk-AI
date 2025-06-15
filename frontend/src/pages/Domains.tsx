@@ -53,6 +53,7 @@ import {
 import axios from 'axios';
 
 // Mock data - replace with actual API calls in production
+
 const domainsMock: DomainRecord[] = [
   {
     id: 1,
