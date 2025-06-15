@@ -28,6 +28,8 @@ import {
     Button,
     Card,
     CardContent,
+    CardHeader,
+    CardTitle,
     Chip,
     Container,
     Divider,
@@ -195,73 +197,78 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
   };
 
   return (
-    <Card sx={{ p: 2, mb: 2, background: 'rgba(0,255,136,0.04)', border: '1px solid #00ff8830' }}>
-      <form onSubmit={handleSubmit}>
-        <VercelBlobImageUpload label="Upload Photo" onUpload={handlePhotoUpload} initialUrl={form.photo_url} />
-        <TextField 
-          label="Name" 
-          value={form.name} 
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} 
-          fullWidth 
-          size="small" 
-          sx={{ mb: 1 }} 
-          required 
-        />
-        <TextField 
-          label="Email (unique)" 
-          value={form.email} 
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('email', e.target.value)} 
-          fullWidth 
-          size="small" 
-          sx={{ mb: 1 }} 
-          required 
-          type="email" 
-        />
-        <TextField 
-          label="GitHub URL" 
-          value={form.github} 
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('github', e.target.value)} 
-          fullWidth 
-          size="small" 
-          sx={{ mb: 1 }} 
-        />
-        <TextField 
-          label="LinkedIn URL" 
-          value={form.linkedin} 
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('linkedin', e.target.value)} 
-          fullWidth 
-          size="small" 
-          sx={{ mb: 1 }} 
-        />
-        <TextField 
-          label="Twitter URL" 
-          value={form.twitter} 
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('twitter', e.target.value)} 
-          fullWidth 
-          size="small" 
-          sx={{ mb: 1 }} 
-        />
-        <TextField 
-          label="Website" 
-          value={form.website} 
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('website', e.target.value)} 
-          fullWidth 
-          size="small" 
-          sx={{ mb: 1 }} 
-        />
-        <TextField 
-          label="Other Link" 
-          value={form.other} 
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('other', e.target.value)} 
-          fullWidth 
-          size="small" 
-          sx={{ mb: 1 }} 
-        />
-        {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
-        <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
-          {loading ? 'Saving...' : 'Submit/Update'}
-        </Button>
-      </form>
+    <Card className="p-4 mb-4 bg-[rgba(0,255,136,0.04)] border border-[#00ff8830]">
+      <CardHeader>
+        <CardTitle>Team Member Details</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit}>
+          <VercelBlobImageUpload label="Upload Photo" onUpload={handlePhotoUpload} initialUrl={form.photo_url} />
+          <TextField 
+            label="Name" 
+            value={form.name} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} 
+            fullWidth 
+            size="small" 
+            sx={{ mb: 1 }} 
+            required 
+          />
+          <TextField 
+            label="Email (unique)" 
+            value={form.email} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('email', e.target.value)} 
+            fullWidth 
+            size="small" 
+            sx={{ mb: 1 }} 
+            required 
+            type="email" 
+          />
+          <TextField 
+            label="GitHub URL" 
+            value={form.github} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('github', e.target.value)} 
+            fullWidth 
+            size="small" 
+            sx={{ mb: 1 }} 
+          />
+          <TextField 
+            label="LinkedIn URL" 
+            value={form.linkedin} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('linkedin', e.target.value)} 
+            fullWidth 
+            size="small" 
+            sx={{ mb: 1 }} 
+          />
+          <TextField 
+            label="Twitter URL" 
+            value={form.twitter} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('twitter', e.target.value)} 
+            fullWidth 
+            size="small" 
+            sx={{ mb: 1 }} 
+          />
+          <TextField 
+            label="Website" 
+            value={form.website} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('website', e.target.value)} 
+            fullWidth 
+            size="small" 
+            sx={{ mb: 1 }} 
+          />
+          <TextField 
+            label="Other Link" 
+            value={form.other} 
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('other', e.target.value)} 
+            fullWidth 
+            size="small" 
+            sx={{ mb: 1 }} 
+          />
+          {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
+          <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+            {loading ? 'Saving...' : 'Submit/Update'}
+          </Button>
+        </form>
+      </CardContent>
     </Card>
   );
 };
@@ -273,34 +280,36 @@ interface TeamMemberDisplayCardProps {
 }
 
 const TeamMemberDisplayCard = ({ member }: TeamMemberDisplayCardProps) => (
-  <Card sx={{ p: 2, minHeight: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,255,136,0.04)', border: '1px solid #00ff8830', mb: 2 }}>
-    <Box sx={{ mb: 2 }}>
-      <Avatar src={member.photo_url} alt={member.name} sx={{ width: 80, height: 80, mb: 1 }} />
-      <Typography variant="h6" align="center">{member.name}</Typography>
+  <Card className="p-4 min-h-[340px] flex flex-col items-center bg-[rgba(0,255,136,0.04)] border border-[#00ff8830] mb-4">
+    <CardHeader className="mb-2">
+      <Avatar src={member.photo_url} alt={member.name} className="w-20 h-20 mb-1" />
+      <CardTitle className="text-center">{member.name}</CardTitle>
       <Typography variant="body2" color="text.secondary" align="center">{member.email}</Typography>
-    </Box>
-    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
-      {member.github && (
-        <IconButton href={member.github} target="_blank" size="small">
-          <GitHubIcon />
-        </IconButton>
-      )}
-      {member.linkedin && (
-        <IconButton href={member.linkedin} target="_blank" size="small">
-          <LinkedInIcon />
-        </IconButton>
-      )}
-      {member.twitter && (
-        <IconButton href={member.twitter} target="_blank" size="small">
-          <TwitterIcon />
-        </IconButton>
-      )}
-      {member.website && (
-        <IconButton href={member.website} target="_blank" size="small">
-          <LanguageIcon />
-        </IconButton>
-      )}
-    </Box>
+    </CardHeader>
+    <CardContent>
+      <Box className="flex gap-1 flex-wrap justify-center">
+        {member.github && (
+          <IconButton href={member.github} target="_blank" size="small">
+            <GitHubIcon />
+          </IconButton>
+        )}
+        {member.linkedin && (
+          <IconButton href={member.linkedin} target="_blank" size="small">
+            <LinkedInIcon />
+          </IconButton>
+        )}
+        {member.twitter && (
+          <IconButton href={member.twitter} target="_blank" size="small">
+            <TwitterIcon />
+          </IconButton>
+        )}
+        {member.website && (
+          <IconButton href={member.website} target="_blank" size="small">
+            <LanguageIcon />
+          </IconButton>
+        )}
+      </Box>
+    </CardContent>
   </Card>
 );
 // --- End TeamMemberDisplayCard ---
