@@ -240,16 +240,8 @@ const messagesMock: Message[] = [
     sender_id: 103,
     sender_name: 'Bob Smith',
     sender_avatar: 'https://via.placeholder.com/40',
-    content: 'I found a potential security issue in the login flow. Let me create a PR with the fix.',
-    timestamp: '2023-03-10T10:15:00Z',
-    attachments: [
-      {
-        id: 1,
-        name: 'security_fix.patch',
-        url: '#',
-        type: 'code',
-      },
-    ],
+    content: 'I have reviewed the code and left some comments. Please check.',
+    timestamp: '2023-03-10T10:00:00Z',
   },
 ];
 
