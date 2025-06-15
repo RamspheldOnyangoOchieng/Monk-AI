@@ -24,6 +24,7 @@ import LiveWorkflowDemo from './components/LiveWorkflowDemo';
 import HackathonPresentation from './components/HackathonPresentation';
 import Collaboration from './pages/Collaboration';
 import Domains from './pages/Domains';
+import PitchDeck from './components/PitchDeck';
 
 // Dark theme configuration
 const darkTheme = createTheme({
@@ -158,6 +159,9 @@ const App: React.FC = () => {
             
             {/* Hackathon Presentation */}
             <Route path="/presentation" element={<HackathonPresentation />} />
+            
+            {/* Pitch Deck */}
+            <Route path="/pitch" element={<PitchDeck />} />
             
             {/* Catch all route - redirect to dashboard */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
