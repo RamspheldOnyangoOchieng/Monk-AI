@@ -67,6 +67,7 @@ interface TeamMember {
   twitter?: string;
   website?: string;
   other?: string;
+  phone?: string;
 }
 
 // --- VercelBlobImageUpload Component ---
@@ -267,19 +268,38 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
 // --- End TeamLinksCard ---
 
 // --- TeamMemberDisplayCard ---
-const TeamMemberDisplayCard = ({ member }) => (
+interface TeamMemberDisplayCardProps {
+  member: TeamMember;
+}
+
+const TeamMemberDisplayCard = ({ member }: TeamMemberDisplayCardProps) => (
   <Card sx={{ p: 2, minHeight: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,255,136,0.04)', border: '1px solid #00ff8830', mb: 2 }}>
     <Box sx={{ mb: 2 }}>
       <Avatar src={member.photo_url} alt={member.name} sx={{ width: 80, height: 80, mb: 1 }} />
+      <Typography variant="h6" align="center">{member.name}</Typography>
+      <Typography variant="body2" color="text.secondary" align="center">{member.email}</Typography>
     </Box>
-    <Typography variant="h6">{member.name}</Typography>
-    <Typography variant="body2" color="text.secondary">{member.email}</Typography>
-    <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
-      {member.github && <IconButton component="a" href={member.github} target="_blank"><GitHubIcon /></IconButton>}
-      {member.linkedin && <IconButton component="a" href={member.linkedin} target="_blank"><LinkedInIcon /></IconButton>}
-      {member.twitter && <IconButton component="a" href={member.twitter} target="_blank"><TwitterIcon /></IconButton>}
-      {member.website && <IconButton component="a" href={member.website} target="_blank"><LanguageIcon /></IconButton>}
-      {member.other && <IconButton component="a" href={member.other} target="_blank"><LanguageIcon /></IconButton>}
+    <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', justifyContent: 'center' }}>
+      {member.github && (
+        <IconButton href={member.github} target="_blank" size="small">
+          <GitHubIcon />
+        </IconButton>
+      )}
+      {member.linkedin && (
+        <IconButton href={member.linkedin} target="_blank" size="small">
+          <LinkedInIcon />
+        </IconButton>
+      )}
+      {member.twitter && (
+        <IconButton href={member.twitter} target="_blank" size="small">
+          <TwitterIcon />
+        </IconButton>
+      )}
+      {member.website && (
+        <IconButton href={member.website} target="_blank" size="small">
+          <LanguageIcon />
+        </IconButton>
+      )}
     </Box>
   </Card>
 );
@@ -1073,15 +1093,26 @@ const HackathonPresentation: React.FC = () => {
 };
 
 // --- TeamLinksSection ---
-const TeamLinksSection = () => {
+interface TeamLinksSectionProps {
+  onRefresh?: () => void;
+}
+
+const TeamLinksSection = ({ onRefresh }: TeamLinksSectionProps) => {
   const [teamLinks, setTeamLinks] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(0);
 
   useEffect(() => {
-    fetch('/api/team-links')
-      .then(res => res.json())
-      .then(setTeamLinks);
+    const fetchTeamLinks = async () => {
+      try {
+        const response = await fetch('/api/team-links');
+        const data = await response.json();
+        setTeamLinks(data);
+      } catch (error) {
+        console.error('Error fetching team links:', error);
+      }
+    };
+    fetchTeamLinks();
   }, [refresh]);
 
   const handleSubmit = async (member: TeamMember) => {
@@ -1089,26 +1120,25 @@ const TeamLinksSection = () => {
     await fetch('/api/team-links', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(member),
+      body: JSON.stringify(member)
     });
-    setLoading(false);
     setRefresh(r => r + 1);
+    setLoading(false);
+    if (onRefresh) onRefresh();
   };
 
   return (
-    <Grid container spacing={3} justifyContent="center" alignItems="flex-start" sx={{ mb: 4 }}>
-      <Grid item xs={12} md={6}>
-        <TeamLinksCard onSubmit={handleSubmit} loading={loading} />
+    <Box>
+      <Typography variant="h5" gutterBottom>Team Members</Typography>
+      <Grid container spacing={2}>
+        {teamLinks.map((member, index) => (
+          <Grid item xs={12} sm={6} md={4} key={index}>
+            <TeamMemberDisplayCard member={member} />
+          </Grid>
+        ))}
       </Grid>
-      <Grid item xs={12} md={6}>
-        <Box>
-          {teamLinks.length === 0 && <Typography color="text.secondary">No team members yet. Be the first to add your info!</Typography>}
-          {teamLinks.map((member, idx) => (
-            <TeamMemberDisplayCard key={member.email || idx} member={member} />
-          ))}
-        </Box>
-      </Grid>
-    </Grid>
+      <TeamLinksCard onSubmit={handleSubmit} loading={loading} />
+    </Box>
   );
 };
 // --- End TeamLinksSection ---
