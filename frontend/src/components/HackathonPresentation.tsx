@@ -61,7 +61,13 @@ interface Slide {
 }
 
 // --- VercelBlobImageUpload Component ---
-const VercelBlobImageUpload = ({ label, onUpload, initialUrl }) => {
+interface VercelBlobImageUploadProps {
+  label: string;
+  onUpload?: (url: string) => void;
+  initialUrl?: string;
+}
+
+const VercelBlobImageUpload = ({ label, onUpload, initialUrl }: VercelBlobImageUploadProps) => {
   const [imageUrl, setImageUrl] = useState(initialUrl || '');
   const [uploading, setUploading] = useState(false);
 
