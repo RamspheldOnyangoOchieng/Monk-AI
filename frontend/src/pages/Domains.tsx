@@ -52,6 +52,7 @@ import {
 } from '@mui/icons-material';
 import axios from 'axios';
 
+
 // Mock data - replace with actual API calls in production
 
 const domainsMock: DomainRecord[] = [
