@@ -7,25 +7,13 @@ anthropic>=0.8.0
 openai>=1.0.0
 python-jose==3.3.0
 passlib==1.7.4
-python-multipart==0.0.6
-sqlalchemy==2.0.23
-aiohttp==3.9.1
-bcrypt==4.0.1
-alembic==1.12.0
-tenacity==8.2.2
-httpx==0.25.0
-pydantic-settings==2.1.0
-redis==4.6.0
-
-# New Multi-Provider AI Support
-google-generativeai==0.3.2
-google-auth==2.25.2
-
-# Testing and Validation
 pytest==7.4.3
 pytest-asyncio==0.21.1
 pytest-mock==3.12.0
-
-# Added from the code block
 typing-extensions>=4.0.0
-supabase>=2.0.0 
+supabase>=2.0.0
+sqlalchemy>=2.0.0
+alembic>=1.12.0
+psycopg2-binary>=2.9.9
+python-multipart>=0.0.6
+bcrypt>=4.0.1

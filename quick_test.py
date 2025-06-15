@@ -43,7 +43,7 @@ async def test_demo_endpoints():
                     async with session.get(url) as response:
                         status = response.status
                         response_data = await response.json()
-                else:
+            else:
                     async with session.post(url, json=data) as response:
                         status = response.status
                         response_data = await response.json()
@@ -87,7 +87,7 @@ async def test_demo_endpoints():
     if working >= 5:  # Most critical endpoints working
         print("🎉 DEMO IS READY! Your frontend should work perfectly!")
         print("💡 Start frontend with: cd frontend; npm start")
-    else:
+        else:
         print("⚠️  Some endpoints need attention before demo")
     
     return results

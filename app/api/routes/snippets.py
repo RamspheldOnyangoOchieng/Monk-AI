@@ -1,10 +1,13 @@
 from typing import Annotated, Any, List
 
+from typing import Any, List, Optional
+from typing_extensions import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, get_db
-from app.crud.crud_snippet import snippet_crud
+from app.crud.code_snippet import snippet_crud
 from app.models.user import User
 from app.schemas.snippet import SnippetCreate, SnippetResponse, SnippetUpdate
 
@@ -121,4 +124,4 @@ async def delete_snippet(
             detail="Not enough permissions"
         )
     snippet = snippet_crud.remove(db=db, id=snippet_id)
-    return snippet 
+    return snippet

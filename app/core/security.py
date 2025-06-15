@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional, Union, Any, Dict
 
-import jwt
+from jose import jwt
 import bcrypt
 import secrets
 from fastapi import Depends, HTTPException, status, Request
@@ -9,6 +9,9 @@ from fastapi.security import OAuth2PasswordBearer
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.core.config import settings
+
+# JWT Algorithm
+ALGORITHM = "HS256"
 
 # OAuth2 scheme for token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -190,4 +193,4 @@ async def verify_rate_limit(request: Request):
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Rate limit exceeded. Please try again later."
-        ) 
+        )

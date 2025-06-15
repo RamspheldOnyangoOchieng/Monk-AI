@@ -35,4 +35,7 @@ class CodeSnippetRepository(BaseRepository[CodeSnippet]):
         return db.query(CodeSnippet).filter(
             CodeSnippet.project_id == project_id,
             CodeSnippet.language == language
-        ).all() 
+        ).all()
+
+
+snippet_crud = CodeSnippetRepository()

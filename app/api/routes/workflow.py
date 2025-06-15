@@ -11,6 +11,8 @@ from pydantic import BaseModel
 from typing import Dict, Optional, AsyncGenerator, Any
 from app.agents.ideation import Ideation
 from app.agents.code_optimizer import CodeOptimizer
+from app.agents.orchestrator import AgentOrchestrator
+from app.crud.agent_log import AgentLogRepository
 
 router = APIRouter(tags=["workflow"])
 
@@ -21,13 +23,19 @@ class AutomatedWorkflowRequest(BaseModel):
 
 class WorkflowRequest(BaseModel):
     project_description: str
-    programming_language: str = "python"
-    workflow_type: str = "full_development"
-    code_sample: Optional[str] = None
+    programming_language: Optional[str] = "python"
+    workflow_type: Optional[str] = "full_development"
+    code_sample: Optional[str] = ""
 
-def create_sse_message(event_type: str, data: Dict) -> str:
-    """Create a Server-Sent Events message."""
-    return f"event: {event_type}\ndata: {json.dumps(data)}\n\n"
+# Global workflow store for tracking active workflows
+active_workflows = {}
+pipeline_requests: Dict[str, Any] = {}
+workflow_requests: Dict[str, WorkflowRequest] = {}
+
+def create_sse_message(event: str, data: Dict[str, Any]) -> str:
+    """Formats a message for Server-Sent Events."""
+    json_data = json.dumps(data)
+    return f"event: {event}\ndata: {json_data}\n\n"
 
 @router.post("/automated-pipeline")
 async def start_automated_pipeline(request: AutomatedWorkflowRequest):
@@ -556,227 +564,156 @@ async def execute_generated_app(generated_code: Dict[str, str], framework: str, 
         }
 
 async def generate_workflow_stream(workflow_id: str, request: WorkflowRequest) -> AsyncGenerator[str, None]:
-    """Generate a realistic workflow execution stream."""
+    """Generate workflow execution stream with step tracking and stop capability"""
     
-    # Define steps based on workflow type
-    steps_map = {
-        "full_development": [
-            ("ideation", "Ideation & Planning"),
-            ("code_generation", "Code Generation"),
-            ("security_analysis", "Security Analysis"),
-            ("test_generation", "Test Generation"),
-            ("documentation", "Documentation"),
-            ("code_review", "Code Review")
-        ],
-        "code_improvement": [
-            ("code_generation", "Code Generation"),
-            ("security_analysis", "Security Analysis"),
-            ("test_generation", "Test Generation"),
-            ("code_review", "Code Review")
-        ],
-        "security_focused": [
-            ("security_analysis", "Security Analysis"),
-            ("test_generation", "Test Generation")
-        ],
-        "documentation_focused": [
-            ("documentation", "Documentation")
-        ]
+    # Initialize workflow tracking
+    active_workflows[workflow_id] = {
+        "status": "running",
+        "current_step": 0,
+        "total_steps": 6,
+        "progress": 0,
+        "steps": [],
+        "should_stop": False,
+        "start_time": asyncio.get_event_loop().time()
     }
     
-    steps = steps_map.get(request.workflow_type, steps_map["full_development"])
-    total_steps = len(steps)
+    # Initialize orchestrator
+    orchestrator = AgentOrchestrator()
     
-    # Send initial status
-    initial_data = {
-        'workflow_id': workflow_id,
-        'status': 'running',
-        'current_step': 0,
-        'total_steps': total_steps,
-        'progress': 0,
-        'steps': [],
-        'start_time': time.time(),
-        'results': {}
+    workflow_steps = [
+        ("ideation", "Ideation & Planning"),
+        ("code_generation", "Code Generation"),
+        ("security_analysis", "Security Analysis"),
+        ("test_generation", "Test Generation"),
+        ("documentation", "Documentation"),
+        ("code_review", "Code Review")
+    ]
+    
+    context = {
+        "project_description": request.project_description,
+        "programming_language": request.programming_language,
+        "workflow_type": request.workflow_type,
+        "code_sample": request.code_sample
     }
-    yield create_sse_message("workflow_status", initial_data)
+
+    try:
+        # Initial workflow started message
+        yield create_sse_message("workflow_start", {
+            "workflow_id": workflow_id,
+            "status": "started",
+            "total_steps": len(workflow_steps),
+            "progress": 0,
+            "message": "🚀 Workflow initiated, buckle up!"
+        })
+
+        for i, (step_key, step_name) in enumerate(workflow_steps):
+            
+            # Check if workflow should stop
+            if active_workflows.get(workflow_id, {}).get("should_stop", False):
+                yield create_sse_message("workflow_update", {
+                    "workflow_id": workflow_id,
+                    "status": "stopping",
+                    "message": "Workflow stop signal received."
+                })
+                break
+            
+            step_id = f"{workflow_id}-{i+1}"
+            active_workflows[workflow_id]["current_step"] = i + 1
+            
+            # Send step start message
+            yield create_sse_message("step_start", {
+                "workflow_id": workflow_id,
+                "step_id": step_id,
+                "agent_name": step_name,
+                "status": "started",
+                "progress": 0,
+                "message": f"🚀 {step_name}: Starting..."
+            })
+            
+            active_workflows[workflow_id]["progress"] = int(((i + 1) / len(workflow_steps)) * 100 * 0.5)
+            
+            # Send an update that we're in progress
+            yield create_sse_message("step_update", {
+                "workflow_id": workflow_id,
+                "step_id": step_id,
+                "agent_name": step_name,
+                "status": "running",
+                "progress": 75,
+                "message": f"⚡ {step_name}: Processing..."
+            })
+            
+            # Execute the actual step
+            try:
+                result = await orchestrator.execute_step(step_key, context)
+                
+                # Update context with results
+                context.update(result)
+                
+                # Send step completion
+                yield create_sse_message("step_complete", {
+                    "workflow_id": workflow_id,
+                    "step_id": step_id,
+                    "agent_name": step_name,
+                    "status": "completed",
+                    "progress": 100,
+                    "result": result,
+                    "duration": 2, # Placeholder duration
+                    "message": f"✅ {step_name}: Completed successfully"
+                })
+                
+                await asyncio.sleep(0.5)
+                
+            except Exception as e:
+                # Send error for this step but continue workflow
+                yield create_sse_message("step_error", {
+                    "workflow_id": workflow_id,
+                    "step_id": step_id,
+                    "agent_name": step_name,
+                    "status": "failed",
+                    "progress": 100,
+                    "error": str(e),
+                    "message": f"❌ {step_name}: Failed - {str(e)}"
+                })
+                
+                await asyncio.sleep(0.5)
+        
+        # Final workflow completion
+        if workflow_id in active_workflows:
+            final_status = "stopped" if active_workflows[workflow_id].get("should_stop", False) else "completed"
+            
+            active_workflows[workflow_id]["status"] = final_status
+            active_workflows[workflow_id]["progress"] = 100
+            
+            yield create_sse_message("workflow_complete", {
+                "workflow_id": workflow_id,
+                "status": final_status,
+                "results": context,
+                "total_time": int(asyncio.get_event_loop().time() - active_workflows[workflow_id]["start_time"]),
+                "message": "🎉 Workflow completed successfully!" if final_status == "completed" else "🛑 Workflow stopped",
+                "progress": 100
+            })
+        
+    except Exception as e:
+        # Send final error
+        yield create_sse_message("error", {
+            "workflow_id": workflow_id,
+            "message": f"Workflow failed: {str(e)}",
+            "error": str(e)
+        })
     
-    results = {}
-    
-    # Execute each step
-    for step_index, (step_key, step_name) in enumerate(steps):
-        step_id = f"{workflow_id}_{step_key}_{step_index}"
-        
-        # Send step start
-        step_start_data = {
-            'step_id': step_id,
-            'agent_name': step_name,
-            'status': 'running',
-            'progress': 25,
-            'workflow_id': workflow_id
-        }
-        yield create_sse_message("step_update", step_start_data)
-        
-        await asyncio.sleep(1)
-        
-        # Send step progress
-        step_progress_data = {
-            'step_id': step_id,
-            'agent_name': step_name,
-            'status': 'running',
-            'progress': 75,
-            'workflow_id': workflow_id
-        }
-        yield create_sse_message("step_update", step_progress_data)
-        
-        await asyncio.sleep(1)
-        
-        # Generate result based on step using REAL AI
-        step_result = await generate_step_result(step_key, request)
-        results[step_key] = step_result
-        
-        # Send step complete
-        step_complete_data = {
-            'step_id': step_id,
-            'agent_name': step_name,
-            'status': 'completed',
-            'result': step_result,
-            'progress': 100,
-            'workflow_id': workflow_id,
-            'duration': 2.0
-        }
-        yield create_sse_message("step_complete", step_complete_data)
-        
-        await asyncio.sleep(0.5)
-    
-    # Send workflow complete
-    workflow_complete_data = {
-        'workflow_id': workflow_id,
-        'status': 'completed',
-        'current_step': total_steps,
-        'total_steps': total_steps,
-        'progress': 100,
-        'results': results,
-        'end_time': time.time()
-    }
-    yield create_sse_message("workflow_complete", workflow_complete_data)
-
-async def generate_step_result(step_key: str, request: WorkflowRequest) -> Dict:
-    """Generate REAL AI results for each step using OpenAI GPT-4o."""
-    
-    if step_key == "ideation":
-        try:
-            from app.core.ai_service import MultiProviderAIService
-            ai_service = MultiProviderAIService()
-            
-            prompt = f"""You are an expert software architect. Analyze this project: {request.project_description}
-
-Generate a professional project analysis with:
-1. Key technical recommendations (3-4 items)
-2. Estimated timeline
-3. Brief analysis summary
-
-Keep it concise and practical."""
-
-            response = await ai_service.generate_response(
-                prompt=prompt,
-                max_tokens=300,
-                temperature=0.3
-            )
-            
-            ai_analysis = response.get('response', 'Analysis generated')
-            
-            return {
-                "agent": "🧠 Ideation & Planning",
-                "analysis": f"AI Analysis: {ai_analysis[:200]}...",
-                "ai_generated": True,
-                "model_used": response.get('model', 'gpt-4o'),
-                "provider": response.get('provider', 'openai'),
-                "full_response": ai_analysis
-            }
-        except Exception as e:
-            return {
-                "agent": "🧠 Ideation & Planning", 
-                "analysis": f"Generated project scope for: {request.project_description}",
-                "recommendations": ["Use microservices", "Implement error handling", "Add logging"],
-                "estimated_timeline": "2-3 weeks",
-                "error": f"AI service error: {str(e)}"
-            }
-    elif step_key == "code_generation":
-        try:
-            from app.core.ai_service import MultiProviderAIService
-            ai_service = MultiProviderAIService()
-            
-            prompt = f"""Generate {request.programming_language} code for: {request.project_description}
-
-Create a functional code structure with:
-1. Main application files
-2. Key functions/classes
-3. Basic error handling
-
-Keep it concise but functional."""
-
-            response = await ai_service.generate_response(
-                prompt=prompt,
-                max_tokens=800,
-                temperature=0.3
-            )
-            
-            generated_code = response.get('response', 'Code generated')
-            
-            return {
-                "agent": "💻 Code Generation",
-                "analysis": f"Generated {request.programming_language} code with AI optimizations",
-                "ai_generated": True,
-                "model_used": response.get('model', 'gpt-4o'),
-                "provider": response.get('provider', 'openai'),
-                "generated_code": generated_code[:500] + "..." if len(generated_code) > 500 else generated_code,
-                "lines_generated": len(generated_code.split('\n')),
-                "full_code": generated_code
-            }
-        except Exception as e:
-            return {
-                "agent": "💻 Code Generation",
-                "analysis": f"Generated {request.programming_language} code with optimizations",
-                "optimization_score": 92,
-                "lines_generated": 450,
-                "functions_created": 15,
-                "error": f"AI service error: {str(e)}"
-            }
-    elif step_key == "security_analysis":
-        return {
-            "agent": "Security Analysis",
-            "security_score": 85,
-            "vulnerabilities_found": 3,
-            "critical_issues": 0,
-            "recommendations": ["Input validation", "Parameterized queries", "Rate limiting"]
-        }
-    elif step_key == "test_generation":
-        return {
-            "agent": "Test Generation",
-            "test_cases_generated": 25,
-            "coverage_target": "95%",
-            "testing_frameworks": ["pytest", "unittest"]
-        }
-    elif step_key == "documentation":
-        return {
-            "agent": "Documentation",
-            "pages_generated": 12,
-            "documentation_score": 88,
-            "readme_generated": True
-        }
-    elif step_key == "code_review":
-        return {
-            "agent": "Code Review",
-            "overall_quality": "Excellent",
-            "review_score": 4.2,
-            "approval_status": "Approved with minor changes"
-        }
-    
-    return {"status": "completed"}
+    finally:
+        # Clean up workflow tracking
+        if workflow_id in active_workflows:
+            # Keep for a short time for status queries
+            await asyncio.sleep(2)
+            if workflow_id in active_workflows:
+                del active_workflows[workflow_id]
 
 @router.post("/execute")
 async def start_workflow(request: WorkflowRequest):
     """Start a new workflow execution."""
     workflow_id = str(uuid.uuid4())
+    workflow_requests[workflow_id] = request
     
     return {
         "workflow_id": workflow_id,
@@ -788,12 +725,10 @@ async def start_workflow(request: WorkflowRequest):
 async def stream_workflow(workflow_id: str):
     """Stream workflow execution via Server-Sent Events."""
     
-    # For demo, use default request
-    request = WorkflowRequest(
-        project_description="AI-powered web application",
-        programming_language="python",
-        workflow_type="full_development"
-    )
+    if workflow_id not in workflow_requests:
+        raise HTTPException(status_code=404, detail="Workflow not found")
+
+    request = workflow_requests[workflow_id]
     
     return StreamingResponse(
         generate_workflow_stream(workflow_id, request),
@@ -912,3 +847,38 @@ async def get_live_metrics():
         "avg_response_time": 1.2,
         "uptime_hours": 1027
     }
+
+@router.post("/stop/{workflow_id}")
+async def stop_workflow(workflow_id: str):
+    """Stop a running workflow"""
+    try:
+        if workflow_id in active_workflows:
+            # Signal the workflow to stop
+            active_workflows[workflow_id]["should_stop"] = True
+            
+            # Clean up after a delay
+            await asyncio.sleep(1)
+            if workflow_id in active_workflows:
+                del active_workflows[workflow_id]
+            
+            return {"message": f"Workflow {workflow_id} has been stopped", "workflow_id": workflow_id}
+        else:
+            return {"message": f"Workflow {workflow_id} not found or already completed", "workflow_id": workflow_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to stop workflow: {str(e)}")
+
+@router.get("/status/{workflow_id}")
+async def get_workflow_status(workflow_id: str):
+    """Get the current status of a workflow"""
+    if workflow_id in active_workflows:
+        workflow = active_workflows[workflow_id]
+        return {
+            "workflow_id": workflow_id,
+            "status": workflow.get("status", "running"),
+            "current_step": workflow.get("current_step", 0),
+            "total_steps": workflow.get("total_steps", 6),
+            "progress": workflow.get("progress", 0),
+            "steps": workflow.get("steps", [])
+        }
+    else:
+        return {"workflow_id": workflow_id, "status": "not_found"}

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, JSON, Enum
+from sqlalchemy import Column, Integer, String, Text, Enum, JSON, ForeignKey, DateTime
 from sqlalchemy.orm import relationship
 import enum
 from datetime import datetime
@@ -57,4 +57,4 @@ class AgentTask(Base, TimestampMixin):
     def fail(self, error_message):
         self.status = TaskStatus.FAILED
         self.error_message = error_message
-        self.completed_at = datetime.utcnow() 
+        self.completed_at = datetime.utcnow()

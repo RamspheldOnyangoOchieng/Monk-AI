@@ -1,0 +1,64 @@
+{
+  "name": "monk-ai-backend",
+  "description": "Monk-AI TraeDevMate API - AI-Powered Multi-Agent Developer Productivity System",
+  "image": "heroku/python",
+  "repository": "https://github.com/yourusername/your-repo",
+  "keywords": ["python", "fastapi", "ai", "developer-tools"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "OPENAI_API_KEY": {
+      "description": "OpenAI API key for GPT models",
+      "required": true
+    },
+    "GEMINI_API_KEY": {
+      "description": "Google Gemini API key",
+      "required": false
+    },
+    "SECRET_KEY": {
+      "description": "Secret key for JWT tokens",
+      "generator": "secret"
+    },
+    "DATABASE_URL": {
+      "description": "Database URL (Heroku Postgres will auto-populate this)",
+      "required": false
+    },
+    "LLM_PROVIDER": {
+      "description": "LLM provider to use (openai or gemini)",
+      "value": "openai"
+    },
+    "LLM_MODEL": {
+      "description": "Model to use (gpt-4o, gpt-4, etc.)",
+      "value": "gpt-4o"
+    },
+    "ENVIRONMENT": {
+      "description": "Environment setting",
+      "value": "production"
+    },
+    "DEBUG": {
+      "description": "Debug mode",
+      "value": "false"
+    },
+    "FRONTEND_URL": {
+      "description": "Frontend URL for CORS",
+      "required": true
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+  "addons": [
+    {
+      "plan": "heroku-postgresql:mini",
+      "options": {
+        "version": "14"
+      }
+    }
+  ]
+} 

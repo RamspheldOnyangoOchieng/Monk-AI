@@ -1,230 +1,290 @@
 """
-Multi-Provider AI Service for Monk-AI Hackathon Demo
-Supports OpenAI, Google Gemini, and OpenRouter with intelligent fallbacks
+AI Service for Monk-AI
 """
 
 import os
 import asyncio
-from typing import Dict, List, Optional, Any, Union
-from enum import Enum
+from typing import Dict, Any, List, Optional, Callable
 import logging
-from datetime import datetime
 import json
+import time
+import random
 
-# Provider-specific imports
+import backoff
+from sqlalchemy.orm import Session
 import openai
+from openai import OpenAI
 import google.generativeai as genai
-import httpx
-from tenacity import retry, stop_after_attempt, wait_exponential
+from google.api_core import exceptions as google_exceptions
 
 from app.core.config import settings
+<<<<<<< HEAD
+from app.crud.agent_log import AgentLogRepository
+from app.models.agent_log import LogLevel
+from app.models.agent_logs import AgentLog
+=======
+from app.crud.agent_log import LogLevel
+>>>>>>> 3258ec8ed28032f9b41b5f58eb392e52109c83bb
 
 logger = logging.getLogger(__name__)
 
-class AIProvider(Enum):
-    OPENAI = "openai"
-    GEMINI = "gemini"
-    OPENROUTER = "openrouter"
 
-class AIServiceError(Exception):
-    """Base exception for AI service errors"""
-    pass
+class AIService:
+    """Centralized AI service with multi-provider support and failover capabilities."""
 
-class MultiProviderAIService:
-    """
-    Unified AI service supporting multiple providers with intelligent routing
-    """
-    
-    def __init__(self):
-        self.providers = {}
-        self.fallback_order = [AIProvider.OPENAI, AIProvider.GEMINI, AIProvider.OPENROUTER]
-        self._initialize_providers()
-        
-    def _initialize_providers(self):
-        """Initialize all available AI providers"""
-        
-        # OpenAI
-        if settings.OPENAI_API_KEY and settings.OPENAI_API_KEY != "your_openai_key_here":
-            self.providers[AIProvider.OPENAI] = {
-                "client": openai.AsyncOpenAI(api_key=settings.OPENAI_API_KEY),
-                "models": ["gpt-4o", "gpt-4o-mini", "gpt-3.5-turbo"],
-                "available": True
-            }
-            logger.info("✅ OpenAI client initialized")
-        
-        # Google Gemini
-        if hasattr(settings, 'GOOGLE_API_KEY') and settings.GOOGLE_API_KEY != "your_google_gemini_key_here":
-            genai.configure(api_key=settings.GOOGLE_API_KEY)
-            self.providers[AIProvider.GEMINI] = {
-                "client": genai,
-                "models": ["gemini-1.5-pro", "gemini-1.5-flash", "gemini-2.0-flash-exp"],
-                "available": True
-            }
-            logger.info("✅ Google Gemini client initialized")
-        
-        # OpenRouter (uses OpenAI-compatible API)
-        if hasattr(settings, 'OPENROUTER_API_KEY') and settings.OPENROUTER_API_KEY != "your_openrouter_key_here":
-            self.providers[AIProvider.OPENROUTER] = {
-                "client": openai.AsyncOpenAI(
-                    base_url="https://openrouter.ai/api/v1",
-                    api_key=settings.OPENROUTER_API_KEY
-                ),
-                "models": ["openai/gpt-4o", "anthropic/claude-3-sonnet", "google/gemini-pro"],
-                "available": True
-            }
-            logger.info("✅ OpenRouter client initialized")
-        
-        logger.info(f"Initialized {len(self.providers)} AI providers: {list(self.providers.keys())}")
-
-    @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
-    async def generate_response(
-        self,
-        prompt: str,
-        provider: Optional[AIProvider] = None,
-        model: Optional[str] = None,
-        max_tokens: int = 1000,
-        temperature: float = 0.7,
-        **kwargs
-    ) -> Dict[str, Any]:
+    def __init__(self, session: Session):
         """
-        Generate AI response with automatic provider fallback
+        Initializes the AIService.
         
         Args:
-            prompt: The input prompt
-            provider: Preferred provider (if None, uses fallback order)
-            model: Specific model to use
-            max_tokens: Maximum response tokens
-            temperature: Response creativity (0-1)
-            
-        Returns:
-            Dict containing response, provider used, model used, and metadata
+            session (Session): The database session.
         """
+        self.session = session
+        self.agent_log_repo = AgentLogRepository()
         
-        providers_to_try = [provider] if provider else self.fallback_order
+        # Initialize providers
+        self._init_providers()
         
-        for current_provider in providers_to_try:
-            if current_provider not in self.providers:
-                continue
-                
-            try:
-                provider_config = self.providers[current_provider]
-                if not provider_config["available"]:
-                    continue
-                
-                # Select model
-                selected_model = model or provider_config["models"][0]
-                
-                # Generate response based on provider
-                if current_provider == AIProvider.OPENAI:
-                    response = await self._generate_openai_response(
-                        provider_config["client"], prompt, selected_model, max_tokens, temperature
-                    )
-                elif current_provider == AIProvider.GEMINI:
-                    response = await self._generate_gemini_response(
-                        provider_config["client"], prompt, selected_model, max_tokens, temperature
-                    )
-                elif current_provider == AIProvider.OPENROUTER:
-                    response = await self._generate_openrouter_response(
-                        provider_config["client"], prompt, selected_model, max_tokens, temperature
-                    )
-                
-                return {
-                    "response": response,
-                    "provider": current_provider.value,
-                    "model": selected_model,
-                    "timestamp": datetime.now().isoformat(),
-                    "success": True
-                }
-                
-            except Exception as e:
-                logger.warning(f"Provider {current_provider.value} failed: {str(e)}")
-                # Mark provider as temporarily unavailable
-                self.providers[current_provider]["available"] = False
-                continue
-        
-        raise AIServiceError("All AI providers are currently unavailable")
-    
-    async def _generate_openai_response(self, client, prompt: str, model: str, max_tokens: int, temperature: float) -> str:
-        """Generate response using OpenAI"""
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens,
-            temperature=temperature
-        )
-        return response.choices[0].message.content
+        # Provider priority order (Gemini first, then OpenAI)
+        self.providers = [
+            self._get_gemini_response,
+            self._get_openai_response,
+        ]
 
-    async def _generate_gemini_response(self, client, prompt: str, model: str, max_tokens: int, temperature: float) -> str:
-        """Generate response using Google Gemini"""
-        # Note: Gemini API calls are not async in the current SDK
-        # Running in thread pool to avoid blocking
-        model_instance = client.GenerativeModel(model)
-        
-        generation_config = client.types.GenerationConfig(
-            max_output_tokens=max_tokens,
-            temperature=temperature
-        )
-        
-        # Run in thread pool since Gemini SDK is not async
-        loop = asyncio.get_event_loop()
-        response = await loop.run_in_executor(
-            None, 
-            lambda: model_instance.generate_content(prompt, generation_config=generation_config)
-        )
-        
-        return response.text
-
-    async def _generate_openrouter_response(self, client, prompt: str, model: str, max_tokens: int, temperature: float) -> str:
-        """Generate response using OpenRouter"""
-        response = await client.chat.completions.create(
-            model=model,
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=max_tokens,
-            temperature=temperature,
-            extra_headers={
-                "HTTP-Referer": "https://monk-ai-hackathon.com",
-                "X-Title": "Monk-AI Hackathon Demo"
-            }
-        )
-        return response.choices[0].message.content
-
-    async def health_check(self) -> Dict[str, Any]:
-        """Check health of all providers"""
-        health_status = {}
-        
-        for provider, config in self.providers.items():
-            try:
-                # Simple test prompt
-                test_response = await self.generate_response(
-                    "Hello, this is a health check. Please respond with 'OK'.",
-                    provider=provider,
-                    max_tokens=10
+    def _init_providers(self):
+        """Initialize AI providers with proper error handling."""
+        try:
+            # Initialize OpenAI client with minimal parameters
+            if settings.OPENAI_API_KEY:
+                self.openai_client = OpenAI(
+                    api_key=settings.OPENAI_API_KEY
                 )
-                health_status[provider.value] = {
-                    "status": "healthy",
-                    "response_time": "< 1s",  # Could implement actual timing
-                    "last_check": datetime.now().isoformat()
-                }
-                # Restore availability if health check passes
-                config["available"] = True
+                logger.info("✅ OpenAI client initialized successfully")
+            else:
+                self.openai_client = None
+                logger.warning("⚠️ OpenAI API key not found")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize OpenAI client: {e}")
+            self.openai_client = None
+        
+        try:
+            # Initialize Gemini
+            if settings.GOOGLE_API_KEY:
+                genai.configure(api_key=settings.GOOGLE_API_KEY)
+                self.gemini_model = genai.GenerativeModel('gemini-1.5-flash-latest')
+                logger.info("✅ Gemini client initialized successfully")
+            else:
+                self.gemini_model = None
+                logger.warning("⚠️ Google API key not found")
+        except Exception as e:
+            logger.error(f"❌ Failed to initialize Gemini client: {e}")
+            self.gemini_model = None
+
+    async def generate_text_with_failover(
+        self,
+        prompt: str,
+        agent_id: int = 1,
+        task_id: int = 1,
+        max_tokens: int = 1000,
+        temperature: float = 0.7
+    ) -> Dict[str, Any]:
+        """Generate text with automatic failover between providers."""
+        
+        for i, provider in enumerate(self.providers):
+            try:
+                logger.info(f"🔄 Attempting provider {i+1}/{len(self.providers)}")
+                result = await provider(prompt, temperature, max_tokens)
+                
+                # Log successful generation
+                await self._log_generation(
+                    agent_id=agent_id,
+                    task_id=task_id,
+                    prompt=prompt[:200] + "..." if len(prompt) > 200 else prompt,
+                    response=result.get('content', '')[:200] + "..." if len(result.get('content', '')) > 200 else result.get('content', ''),
+                    provider=f"provider_{i+1}",
+                    success=True
+                )
+                
+                return result
                 
             except Exception as e:
-                health_status[provider.value] = {
-                    "status": "unhealthy",
-                    "error": str(e),
-                    "last_check": datetime.now().isoformat()
-                }
-                config["available"] = False
+                logger.warning(f"⚠️ Provider {i+1} failed: {str(e)}")
+                if i == len(self.providers) - 1:  # Last provider
+                    # Log failed generation
+                    await self._log_generation(
+                        agent_id=agent_id,
+                        task_id=task_id,
+                        prompt=prompt[:200] + "..." if len(prompt) > 200 else prompt,
+                        response="",
+                        provider="all_failed",
+                        success=False,
+                        error_message=str(e)
+                    )
+                    
+                    # Return fallback response
+                    return {
+                        'content': self._get_fallback_response(prompt),
+                        'provider': 'fallback',
+                        'error': str(e)
+                    }
+                continue
+    
+    async def generate_text(
+        self,
+        prompt: str,
+        agent_id: int = 1,
+        task_id: int = 1,
+        max_tokens: int = 1000,
+        temperature: float = 0.7
+    ) -> Dict[str, Any]:
+        """Generate text using the primary method with failover."""
+        return await self.generate_text_with_failover(
+            prompt=prompt,
+            agent_id=agent_id,
+            task_id=task_id,
+            max_tokens=max_tokens,
+            temperature=temperature
+        )
+
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    async def _get_gemini_response(self, prompt: str, temperature: float, max_tokens: int) -> Dict[str, Any]:
+        """Get response from Google Gemini."""
+        if not self.gemini_model:
+            raise Exception("Gemini model not initialized")
         
-        return health_status
+        try:
+            response = await asyncio.to_thread(
+                self.gemini_model.generate_content,
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=temperature,
+                    max_output_tokens=max_tokens,
+                )
+            )
+            
+            return {
+                'content': response.text,
+                'provider': 'gemini',
+                'model': 'gemini-1.5-flash-latest'
+            }
+        except Exception as e:
+            logger.error(f"Gemini API error: {e}")
+            raise
 
-    def get_available_models(self) -> Dict[str, List[str]]:
-        """Get all available models from all providers"""
-        models = {}
-        for provider, config in self.providers.items():
-            if config["available"]:
-                models[provider.value] = config["models"]
-        return models
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    async def _get_openai_response(self, prompt: str, temperature: float, max_tokens: int) -> Dict[str, Any]:
+        """Get response from OpenAI."""
+        if not self.openai_client:
+            raise Exception("OpenAI client not initialized")
+        
+        try:
+            response = await asyncio.to_thread(
+                self.openai_client.chat.completions.create,
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            
+            return {
+                'content': response.choices[0].message.content,
+                'provider': 'openai',
+                'model': 'gpt-4o'
+            }
+        except Exception as e:
+            logger.error(f"OpenAI API error: {e}")
+            raise
 
-# Global instance
-ai_service = MultiProviderAIService() 
+    def _get_fallback_response(self, prompt: str) -> str:
+        """Generate a fallback response when all providers fail."""
+        fallback_responses = [
+            "I apologize, but I'm currently experiencing technical difficulties. Please try again later.",
+            "The AI service is temporarily unavailable. Your request has been noted and will be processed when service is restored.",
+            "I'm unable to process your request at the moment due to service limitations. Please check back soon.",
+            "Technical issues are preventing me from generating a response right now. Please retry your request.",
+            "The AI providers are currently unavailable. This is a temporary issue that should resolve shortly."
+        ]
+        
+        # Add some context-aware fallbacks based on prompt content
+        if "code" in prompt.lower():
+            fallback_responses.extend([
+                "I'm unable to analyze the code at the moment. Please ensure your code follows best practices and try again later.",
+                "Code analysis is temporarily unavailable. Consider reviewing your code manually for now."
+            ])
+        elif "review" in prompt.lower():
+            fallback_responses.extend([
+                "The review service is temporarily unavailable. Please perform a manual review for now.",
+                "I cannot provide a detailed review at this time. Please check back later."
+            ])
+        elif "test" in prompt.lower():
+            fallback_responses.extend([
+                "Test generation is currently unavailable. Consider writing tests manually following your project's testing patterns.",
+                "The testing service is temporarily down. Please create tests based on your existing test suite structure."
+            ])
+        
+        return random.choice(fallback_responses)
+
+    async def _log_generation(
+        self,
+        agent_id: int,
+        task_id: int,
+        prompt: str,
+        response: str,
+        provider: str,
+        success: bool,
+        error_message: Optional[str] = None
+    ):
+        """Log AI generation attempts to database."""
+        try:
+            log_entry = AgentLog(
+                agent_id=agent_id,
+                task_id=task_id,
+                action="ai_generation",
+                details={
+                    "prompt_preview": prompt,
+                    "response_preview": response,
+                    "provider": provider,
+                    "success": success,
+                    "error": error_message,
+                    "timestamp": time.time()
+                },
+                status="completed" if success else "failed"
+            )
+            
+            self.session.add(log_entry)
+            await asyncio.to_thread(self.session.commit)
+            
+        except Exception as e:
+            logger.error(f"Failed to log AI generation: {e}")
+            # Don't raise here to avoid breaking the main flow
+
+    async def generate_json_output(self, prompt: str, output_schema: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Generates a JSON output from a prompt using a specified schema.
+        This is a placeholder and needs to be implemented with proper failover.
+        """
+        # For now, this just uses OpenAI. It should be updated to use the failover logic.
+        logger.info("Generating JSON output with OpenAI...")
+        try:
+            response = self.openai_client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {
+                        "role": "system",
+                        "content": "You are a helpful assistant that always responds in JSON format.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                response_format={"type": "json_object", "schema": output_schema},
+            )
+            json_response = json.loads(response.choices[0].message.content)
+            logger.info("Successfully generated JSON from OpenAI.")
+            return json_response
+        except Exception as e:
+            logger.error(f"Error generating JSON from OpenAI: {e}", exc_info=True)
+            raise
+
+
+# Create a default instance for backward compatibility
+# Note: This will need a database session when used
+ai_service = None  # Will be initialized with a session when needed

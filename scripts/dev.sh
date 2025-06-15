@@ -49,8 +49,8 @@ done
 # Start development environment
 echo -e "${GREEN}Starting development environment with Docker Compose...${NC}"
 
-# Prepare docker-compose command
-DOCKER_COMPOSE_CMD="docker-compose"
+# Prepare docker compose command
+DOCKER_COMPOSE_CMD="docker compose"
 
 if [ "$REBUILD" = true ]; then
     DOCKER_COMPOSE_CMD="$DOCKER_COMPOSE_CMD build --no-cache"
@@ -58,7 +58,7 @@ if [ "$REBUILD" = true ]; then
 fi
 
 if [ "$DETACHED" = true ]; then
-    echo -e "${YELLOW}Running in detached mode. Use 'docker-compose logs -f' to view logs.${NC}"
+    echo -e "${YELLOW}Running in detached mode. Use 'docker compose logs -f' to view logs.${NC}"
     $DOCKER_COMPOSE_CMD up -d
 else
     $DOCKER_COMPOSE_CMD up
@@ -66,6 +66,6 @@ fi
 
 # This will only run if in detached mode or after stopping with Ctrl+C
 echo -e "${GREEN}Development environment commands:${NC}"
-echo -e "  ${YELLOW}docker-compose ps${NC}      - List containers"
-echo -e "  ${YELLOW}docker-compose logs -f${NC} - View logs"
-echo -e "  ${YELLOW}docker-compose down${NC}    - Stop environment" 
+echo -e "  ${YELLOW}docker compose ps${NC}      - List containers"
+echo -e "  ${YELLOW}docker compose logs -f${NC} - View logs"
+echo -e "  ${YELLOW}docker compose down${NC}    - Stop environment" 

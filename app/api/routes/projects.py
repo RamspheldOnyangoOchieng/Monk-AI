@@ -1,10 +1,11 @@
-from typing import Annotated, Any, List
+from typing import Any, List
+from typing_extensions import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_current_active_user, get_db
-from app.crud.crud_project import project_crud
+from app.crud.project import project_crud
 from app.models.user import User
 from app.schemas.project import ProjectCreate, ProjectResponse, ProjectUpdate
 
@@ -115,4 +116,4 @@ async def delete_project(
             detail="Not enough permissions"
         )
     project = project_crud.remove(db=db, id=project_id)
-    return project 
+    return project

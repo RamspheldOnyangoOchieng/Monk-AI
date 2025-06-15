@@ -42,4 +42,6 @@ class ReviewRepository(BaseRepository[Review]):
             Review.pull_request_id == pr_id,
             Review.type == ReviewType.SUGGESTION,
             Review.suggested_code.isnot(None)
-        ).offset(skip).limit(limit).all() 
+        ).offset(skip).limit(limit).all()
+
+review_crud = ReviewRepository() 

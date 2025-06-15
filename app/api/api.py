@@ -5,6 +5,7 @@ import uuid
 from datetime import datetime
 
 from app.api.routes import users, projects, snippets, reviews, auth, agents, workflow
+from app.agents.pr_reviewer import PRReviewer
 
 api_router = APIRouter()
 

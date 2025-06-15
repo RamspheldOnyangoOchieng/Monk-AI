@@ -148,20 +148,21 @@ const LiveWorkflowDemo: React.FC = () => {
   const [programmingLanguage, setProgrammingLanguage] = useState('Python');
   const [workflowType, setWorkflowType] = useState('full_development');
   const [codeSample, setCodeSample] = useState(`def process_data(data_list):
-    result = []
-    for i in range(len(data_list)):
-        if data_list[i] > 0:
-            for j in range(len(data_list)):
-                if i != j and data_list[j] > data_list[i]:
-                    result.append(data_list[i] * data_list[j])
+    """Process a list of data items"""
+    for item in data_list:
+        # Process each item
+        result = item * 2
+        print(f"Processed: {result}")
     return result`);
 
-  const agentIcons = {
-    'Ideation': <Lightbulb />,
-    'CodeOptimizer': <Speed />,
-    'SecurityAnalyzer': <Security />,
-    'TestGenerator': <Science />,
-    'DocGenerator': <Description />,
+
+  const agentIcons: Record<string, string> = {
+    'IdeationAgent': '💡',
+    'CodeOptimizer': '⚡',
+    'SecurityAnalyzer': '🔒',
+    'TestGenerator': '🧪',
+    'DocGenerator': '📝',
+    'CodeReviewer': '👀'
   };
 
   const agentColors = {
@@ -216,15 +217,20 @@ const LiveWorkflowDemo: React.FC = () => {
   const streamAutomatedPipeline = (pipelineId: string) => {
     const eventSource = new EventSource(`${API_BASE_URL}/api/workflow/automated-stream/${pipelineId}`);
     
+    eventSource.onopen = () => {
+      console.log('SSE connection opened');
+    };
+    
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
+        console.log('SSE message received:', data);
         setPipelineStatus(data);
         
-        if (data.event === 'pipeline_complete') {
+        if (data.event === 'pipeline_complete' || data.status === 'completed') {
           setIsPipelineRunning(false);
           setShowAppPreview(true);
-          eventSource.close();
+          setTimeout(() => eventSource.close(), 1000);
         }
       } catch (error) {
         console.error('Error parsing SSE data:', error);
@@ -232,27 +238,52 @@ const LiveWorkflowDemo: React.FC = () => {
     };
     
     eventSource.addEventListener('pipeline_update', (event) => {
-      const data = JSON.parse(event.data);
-      setPipelineStatus(data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Pipeline update:', data);
+        setPipelineStatus(data);
+      } catch (error) {
+        console.error('Error parsing pipeline_update:', error);
+      }
     });
     
     eventSource.addEventListener('step_complete', (event) => {
-      const data = JSON.parse(event.data);
-      setPipelineStatus(data);
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Step complete:', data);
+        setPipelineStatus(data);
+      } catch (error) {
+        console.error('Error parsing step_complete:', error);
+      }
     });
     
     eventSource.addEventListener('pipeline_complete', (event) => {
-      const data = JSON.parse(event.data);
-      setPipelineStatus(data);
-      setIsPipelineRunning(false);
-      setShowAppPreview(true);
-      eventSource.close();
+      try {
+        const data = JSON.parse(event.data);
+        console.log('Pipeline complete:', data);
+        setPipelineStatus(data);
+        setIsPipelineRunning(false);
+        setShowAppPreview(true);
+        setTimeout(() => eventSource.close(), 1000);
+      } catch (error) {
+        console.error('Error parsing pipeline_complete:', error);
+      }
     });
     
     eventSource.onerror = (error) => {
-      console.error('SSE error:', error);
-      setIsPipelineRunning(false);
-      eventSource.close();
+      console.error('SSE connection error:', error);
+      // Don't immediately close on error - the connection might recover
+      if (eventSource.readyState === EventSource.CLOSED) {
+        console.log('SSE connection closed');
+        setIsPipelineRunning(false);
+      }
+    };
+
+    // Clean up function
+    return () => {
+      if (eventSource.readyState !== EventSource.CLOSED) {
+        eventSource.close();
+      }
     };
   };
 
@@ -322,33 +353,23 @@ const LiveWorkflowDemo: React.FC = () => {
   };
 
   const renderStepIcon = (step: WorkflowStep) => {
-    const agentKey = step.agent_name.replace(/\s+/g, '') as keyof typeof agentIcons;
-    const icon = agentIcons[agentKey] || <HourglassEmpty />;
+    const agentKey = step.agent_name.replace(/\s+/g, '');
+    const icon = (agentIcons as any)[agentKey] || '🔄';
     
-    if (step.status === 'completed') return <CheckCircle color="success" />;
-    if (step.status === 'failed') return <ErrorIcon color="error" />;
-    if (step.status === 'running') return <CircularProgress size={24} />;
-    return icon;
+    // Handle different status states with proper icon styling
+    if (step.status === 'completed') {
+      return <CheckCircle color="success" />;
+    } else if (step.status === 'failed') {
+      return <ErrorIcon color="error" />;
+    } else if (step.status === 'running') {
+      return <CircularProgress size={20} />;
+    } else {
+      // For pending status, return emoji as JSX
+      return <span style={{ fontSize: '16px' }}>{icon}</span>;
+    }
   };
 
-  const renderAgentResult = (agentName: string, result: any) => {
-    if (!result) return null;
 
-    return (
-      <Accordion>
-        <AccordionSummary expandIcon={<ExpandMore />}>
-          <Typography variant="subtitle2">
-            {agentName} Results
-          </Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <pre style={{ fontSize: '12px', whiteSpace: 'pre-wrap' }}>
-            {JSON.stringify(result, null, 2)}
-          </pre>
-        </AccordionDetails>
-      </Accordion>
-    );
-  };
 
   const renderAutomatedPipelineTab = () => (
     <Container maxWidth="lg" sx={{ py: 3 }}>
@@ -412,8 +433,8 @@ const LiveWorkflowDemo: React.FC = () => {
         
         {/* Pipeline Progress */}
         <Grid item xs={12} md={8}>
-          <StyledCard>
-            <CardContent>
+      <StyledCard>
+        <CardContent>
               <Typography variant="h6" gutterBottom>
                 Pipeline Progress
               </Typography>
@@ -428,9 +449,9 @@ const LiveWorkflowDemo: React.FC = () => {
                     />
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                       {pipelineStatus.progress}% Complete
-                    </Typography>
-                  </Box>
-                  
+            </Typography>
+          </Box>
+
                   <Alert 
                     severity={pipelineStatus.status === 'completed' ? 'success' : 'info'}
                     sx={{ mb: 2 }}
@@ -441,13 +462,13 @@ const LiveWorkflowDemo: React.FC = () => {
                   {/* Step Details */}
                   {pipelineStatus.result && (
                     <Paper sx={{ p: 2, mt: 2 }}>
-                      <Typography variant="subtitle2" gutterBottom>
+                  <Typography variant="subtitle2" gutterBottom>
                         Step: {pipelineSteps[pipelineStatus.step as keyof typeof pipelineSteps]?.name}
-                      </Typography>
+                  </Typography>
                       <pre style={{ fontSize: '12px', whiteSpace: 'pre-wrap', maxHeight: '200px', overflow: 'auto' }}>
                         {JSON.stringify(pipelineStatus.result, null, 2)}
                       </pre>
-                    </Paper>
+                </Paper>
                   )}
                 </>
               )}
@@ -459,7 +480,7 @@ const LiveWorkflowDemo: React.FC = () => {
               )}
             </CardContent>
           </StyledCard>
-        </Grid>
+              </Grid>
         
         {/* App Preview */}
         {showAppPreview && pipelineStatus?.app_preview && (
@@ -468,11 +489,11 @@ const LiveWorkflowDemo: React.FC = () => {
               <CardContent>
                 <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <WebAsset /> Your Generated App
-                </Typography>
+                  </Typography>
                 
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   🎉 Your app is ready! Here's a preview of what was generated:
-                </Typography>
+                  </Typography>
                 
                 {pipelineStatus.app_url && (
                   <Alert severity="success" sx={{ mb: 2 }}>
@@ -489,23 +510,23 @@ const LiveWorkflowDemo: React.FC = () => {
                 
                 {pipelineStatus.result?.features && (
                   <Box sx={{ mt: 2 }}>
-                    <Typography variant="subtitle2" gutterBottom>
+                  <Typography variant="subtitle2" gutterBottom>
                       Generated Features:
-                    </Typography>
-                    <List dense>
+                  </Typography>
+                  <List dense>
                       {pipelineStatus.result.features.map((feature: string, index: number) => (
                         <ListItem key={index} sx={{ py: 0 }}>
                           <ListItemText primary={feature} />
-                        </ListItem>
-                      ))}
-                    </List>
+                      </ListItem>
+                    ))}
+                  </List>
                   </Box>
                 )}
               </CardContent>
             </StyledCard>
-          </Grid>
-        )}
-      </Grid>
+            </Grid>
+          )}
+              </Grid>
     </Container>
   );
 
@@ -513,12 +534,12 @@ const LiveWorkflowDemo: React.FC = () => {
     <Container maxWidth="lg" sx={{ py: 3 }}>
       <Grid container spacing={3}>
         <Grid item xs={12} md={4}>
-          <StyledCard>
-            <CardContent>
+      <StyledCard>
+        <CardContent>
               <Typography variant="h6" gutterBottom>
                 Workflow Configuration
-              </Typography>
-              
+          </Typography>
+          
               <TextField
                 fullWidth
                 multiline
@@ -528,7 +549,7 @@ const LiveWorkflowDemo: React.FC = () => {
                 onChange={(e) => setProjectDescription(e.target.value)}
                 sx={{ mb: 2 }}
               />
-              
+            
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Programming Language</InputLabel>
                 <Select
@@ -543,7 +564,7 @@ const LiveWorkflowDemo: React.FC = () => {
                   <MenuItem value="Go">Go</MenuItem>
                 </Select>
               </FormControl>
-              
+            
               <FormControl fullWidth sx={{ mb: 2 }}>
                 <InputLabel>Workflow Type</InputLabel>
                 <Select
@@ -557,7 +578,7 @@ const LiveWorkflowDemo: React.FC = () => {
                   <MenuItem value="documentation_focused">Documentation</MenuItem>
                 </Select>
               </FormControl>
-              
+            
               <TextField
                 fullWidth
                 multiline
@@ -567,73 +588,120 @@ const LiveWorkflowDemo: React.FC = () => {
                 onChange={(e) => setCodeSample(e.target.value)}
                 sx={{ mb: 2, fontFamily: 'monospace' }}
               />
-              
-              <Button
+
+            <Button
                 fullWidth
-                variant="contained"
-                size="large"
-                onClick={startWorkflow}
-                disabled={isRunning}
+              variant="contained"
+              size="large"
+              onClick={startWorkflow}
+              disabled={isRunning}
                 startIcon={isRunning ? <CircularProgress size={20} /> : <PlayArrow />}
-              >
+            >
                 {isRunning ? 'Running Workflow...' : 'Start Workflow'}
-              </Button>
-            </CardContent>
-          </StyledCard>
+            </Button>
+        </CardContent>
+      </StyledCard>
         </Grid>
-        
+
         <Grid item xs={12} md={8}>
-          <StyledCard>
-            <CardContent>
+        <StyledCard>
+          <CardContent>
               <Typography variant="h6" gutterBottom>
                 Workflow Execution
               </Typography>
-              
+
               {workflowStatus && (
                 <>
                   <Box sx={{ mb: 3 }}>
-                    <LinearProgress 
-                      variant="determinate" 
-                      value={(workflowStatus.current_step / workflowStatus.total_steps) * 100} 
+            <LinearProgress
+              variant="determinate"
+              value={(workflowStatus.current_step / workflowStatus.total_steps) * 100}
                       sx={{ height: 8, borderRadius: 4 }}
                     />
                     <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
                       Step {workflowStatus.current_step} of {workflowStatus.total_steps}
-                    </Typography>
+            </Typography>
                   </Box>
-                  
-                  <Stepper orientation="vertical">
-                    {workflowStatus.steps.map((step, index) => (
-                      <Step key={step.step_id} active={step.status === 'running'} completed={step.status === 'completed'}>
-                        <StepLabel
-                          StepIconComponent={() => renderStepIcon(step)}
-                          error={step.status === 'failed'}
-                        >
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography variant="subtitle2">
-                              {step.agent_name}
-                            </Typography>
-                            <StatusChip 
-                              label={step.status} 
-                              size="small" 
-                              status={step.status}
-                            />
-                            {step.start_time && (
-                              <Typography variant="caption" color="text.secondary">
-                                {formatDuration(step.start_time, step.end_time)}
-                              </Typography>
-                            )}
-                          </Box>
-                        </StepLabel>
-                        {step.result && (
-                          <StepContent>
-                            {renderAgentResult(step.agent_name, step.result)}
-                          </StepContent>
-                        )}
-                      </Step>
-                    ))}
-                  </Stepper>
+
+            <Stepper orientation="vertical">
+              {workflowStatus.steps.map((step, index) => (
+                <Step key={step.step_id} active={step.status === 'running'} completed={step.status === 'completed'}>
+                  <StepLabel
+                    error={step.status === 'failed'}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {renderStepIcon(step)}
+                      <Typography variant="body2">
+                        {step.agent_name}
+                      </Typography>
+                      {step.status === 'completed' && (
+                        <Chip 
+                          label={`${formatDuration(step.start_time, step.end_time)}`} 
+                          size="small" 
+                          color="success"
+                        />
+                      )}
+                    </Box>
+                  </StepLabel>
+                  {step.status === 'completed' && step.result && (
+                    <StepContent>
+                      <Paper sx={{ p: 2, mt: 1, bgcolor: 'grey.50' }}>
+                        <Typography variant="caption" color="text.secondary" gutterBottom>
+                          Step Result:
+                        </Typography>
+                        <pre style={{ 
+                          fontSize: '11px', 
+                          whiteSpace: 'pre-wrap',
+                          margin: 0,
+                          fontFamily: 'monospace',
+                          maxHeight: '150px',
+                          overflow: 'auto'
+                        }}>
+                          {typeof step.result === 'string' 
+                            ? step.result 
+                            : JSON.stringify(step.result, null, 2)
+                          }
+                        </pre>
+                      </Paper>
+                    </StepContent>
+                  )}
+                </Step>
+              ))}
+            </Stepper>
                 </>
+              )}
+              
+              {workflowStatus && workflowStatus.status === 'completed' && (
+                <Paper sx={{ p: 3, mt: 3, bgcolor: 'success.light', color: 'success.contrastText' }}>
+                  <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <CheckCircle />
+                    Workflow Completed Successfully!
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 2 }}>
+                    All {workflowStatus.total_steps} agents have completed their tasks in {formatDuration(workflowStatus.start_time, workflowStatus.end_time)}.
+                  </Typography>
+                  {Object.keys(workflowStatus.results || {}).length > 0 && (
+                    <Accordion sx={{ mt: 2 }}>
+                      <AccordionSummary expandIcon={<ExpandMore />}>
+                        <Typography variant="subtitle2">
+                          View Final Results
+                        </Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Paper sx={{ p: 2, bgcolor: 'grey.50', maxHeight: '300px', overflow: 'auto' }}>
+                          <pre style={{ 
+                            fontSize: '12px', 
+                            whiteSpace: 'pre-wrap',
+                            margin: 0,
+                            fontFamily: 'monospace'
+                          }}>
+                            {JSON.stringify(workflowStatus.results, null, 2)}
+                          </pre>
+                        </Paper>
+                      </AccordionDetails>
+                    </Accordion>
+                  )}
+                </Paper>
               )}
               
               {!workflowStatus && !isRunning && (
@@ -641,10 +709,10 @@ const LiveWorkflowDemo: React.FC = () => {
                   Configure your workflow settings and click "Start Workflow" to begin the multi-agent process.
                 </Alert>
               )}
-            </CardContent>
-          </StyledCard>
-        </Grid>
-      </Grid>
+          </CardContent>
+        </StyledCard>
+              </Grid>
+            </Grid>
     </Container>
   );
 

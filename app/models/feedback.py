@@ -21,7 +21,7 @@ class Feedback(Base, TimestampMixin):
     rating = Column(Float)  # 1-5 scale
     feedback_type = Column(Enum(FeedbackType), nullable=False)
     comment = Column(Text)
-    metadata = Column(JSON)  # Additional data about the context of the feedback
+    extra_data = Column(JSON)  # Additional data about the context of the feedback
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     project_id = Column(Integer, ForeignKey('projects.id'))
     agent_task_id = Column(Integer, ForeignKey('agent_tasks.id'))

@@ -30,11 +30,11 @@ interface OptimizationItem {
 
 interface OptimizationResult {
   summary: string;
-  performance_optimizations: OptimizationItem[];
-  memory_optimizations: OptimizationItem[];
-  code_quality_improvements: OptimizationItem[];
-  algorithm_improvements: OptimizationItem[];
-  resource_optimizations: OptimizationItem[];
+  performance: OptimizationItem[];
+  memory_usage: OptimizationItem[];
+  code_quality: OptimizationItem[];
+  algorithm_complexity: OptimizationItem[];
+  resource_utilization: OptimizationItem[];
 }
 
 const languages = [
@@ -181,65 +181,65 @@ const CodeOptimizer = () => {
             <Typography paragraph>{result.summary}</Typography>
 
             {/* Performance Optimizations */}
-            {result.performance_optimizations.length > 0 && (
+            {result.performance && result.performance.length > 0 && (
               <>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom color="primary">
                   Performance Optimizations
                 </Typography>
-                {result.performance_optimizations.map((optimization, index) => (
+                {result.performance.map((optimization, index) => (
                   <OptimizationCard key={index} optimization={optimization} />
                 ))}
               </>
             )}
 
             {/* Memory Optimizations */}
-            {result.memory_optimizations.length > 0 && (
+            {result.memory_usage && result.memory_usage.length > 0 && (
               <>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom color="primary">
                   Memory Usage Optimizations
                 </Typography>
-                {result.memory_optimizations.map((optimization, index) => (
+                {result.memory_usage.map((optimization, index) => (
                   <OptimizationCard key={index} optimization={optimization} />
                 ))}
               </>
             )}
 
             {/* Code Quality Improvements */}
-            {result.code_quality_improvements.length > 0 && (
+            {result.code_quality && result.code_quality.length > 0 && (
               <>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom color="primary">
                   Code Quality Improvements
                 </Typography>
-                {result.code_quality_improvements.map((optimization, index) => (
+                {result.code_quality.map((optimization, index) => (
                   <OptimizationCard key={index} optimization={optimization} />
                 ))}
               </>
             )}
 
             {/* Algorithm Improvements */}
-            {result.algorithm_improvements.length > 0 && (
+            {result.algorithm_complexity && result.algorithm_complexity.length > 0 && (
               <>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom color="primary">
                   Algorithm Complexity Improvements
                 </Typography>
-                {result.algorithm_improvements.map((optimization, index) => (
+                {result.algorithm_complexity.map((optimization, index) => (
                   <OptimizationCard key={index} optimization={optimization} />
                 ))}
               </>
             )}
 
             {/* Resource Optimizations */}
-            {result.resource_optimizations.length > 0 && (
+            {result.resource_utilization && result.resource_utilization.length > 0 && (
               <>
                 <Divider sx={{ my: 2 }} />
                 <Typography variant="h6" gutterBottom color="primary">
                   Resource Utilization Optimizations
                 </Typography>
-                {result.resource_optimizations.map((optimization, index) => (
+                {result.resource_utilization.map((optimization, index) => (
                   <OptimizationCard key={index} optimization={optimization} />
                 ))}
               </>

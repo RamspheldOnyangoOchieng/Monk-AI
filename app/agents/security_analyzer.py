@@ -5,34 +5,20 @@ import asyncio
 import time
 from typing import Dict, List, Any, Optional, Tuple
 from datetime import datetime
+from sqlalchemy.orm import Session
+from app.core.ai_service import AIService
+from app.core.database import SessionLocal
+import logging
+
+logger = logging.getLogger(__name__)
 
 class SecurityAnalyzer:
     """Advanced Agent for analyzing code for security vulnerabilities with OWASP Top 10 categorization."""
     
-    def __init__(self):
+    def __init__(self, db_session: Session = None):
         """Initialize the SecurityAnalyzer agent."""
-        # Try to initialize API clients if keys are available
-        self.openai_client = None
-        self.anthropic_client = None
-        
-        try:
-            openai_key = os.getenv("OPENAI_API_KEY")
-            anthropic_key = os.getenv("ANTHROPIC_API_KEY")
-            
-            if openai_key:
-                from openai import OpenAI
-                self.openai_client = OpenAI(api_key=openai_key)
-                
-            if anthropic_key:
-                from anthropic import Anthropic
-                self.anthropic_client = Anthropic(api_key=anthropic_key)
-                
-        except ImportError:
-            # API libraries not installed, will use fallback
-            pass
-        except Exception:
-            # Any other error, will use fallback
-            pass
+        self.db_session = db_session or SessionLocal()
+        self.ai_service = AIService(session=self.db_session)
         
         # OWASP Top 10 2023 categories with detailed descriptions
         self.owasp_categories = {
@@ -116,13 +102,15 @@ class SecurityAnalyzer:
             "security_score_improvement": "73%"
         }
     
-    async def analyze_security(self, code: str, language: str, focus_areas: Optional[List[str]] = None) -> Dict[str, Any]:
+    async def analyze_security(self, code: str, language: str, focus_areas: Optional[List[str]] = None, agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """Analyze code for security vulnerabilities with OWASP Top 10 categorization.
         
         Args:
             code: The source code to analyze
             language: The programming language of the code
             focus_areas: Optional list of specific security areas to focus on
+            agent_id: The ID of the agent
+            task_id: The ID of the task
             
         Returns:
             Dictionary containing comprehensive security analysis with OWASP mapping
@@ -140,7 +128,9 @@ class SecurityAnalyzer:
         prompt = self._generate_security_prompt(code, language, focus_areas, static_analysis)
         
         # Get security analysis from AI
-        security_content = await self._get_ai_analysis(prompt, language)
+        security_content = await self._get_ai_analysis(
+            prompt, language, agent_id=agent_id, task_id=task_id
+        )
         
         # Parse and categorize vulnerabilities
         vulnerabilities = self._parse_security_response(security_content)
@@ -413,122 +403,29 @@ class SecurityAnalyzer:
         
         return prompt
     
-    async def _get_ai_analysis(self, prompt: str, language: str) -> str:
+    async def _get_ai_analysis(self, prompt: str, language: str, agent_id: int, task_id: int) -> str:
         """Get security analysis from AI model."""
-        # Try real API first, fallback to mock if unavailable
-        if self.openai_client:
-            try:
-                response = await self.openai_client.chat.completions.create(
-                    model="gpt-4-turbo-preview",
-                    messages=[{
-                        "role": "user",
-                        "content": prompt
-                    }],
-                    temperature=0.3
-                )
-                
-                return response.choices[0].message.content
-            except Exception:
-                # API call failed, fall back to mock
-                pass
-        
-        # Fallback mock response
-        mock_response = """# Security Analysis Report
-
-## Summary
-The code was analyzed for security vulnerabilities. Several issues were identified with varying severity levels. The most critical issues involve SQL injection, improper authentication, and sensitive data exposure.
-
-## Injection Vulnerabilities
-
-### 1. SQL Injection in User Input
-
-**Vulnerable Code (Lines 45-47):**
-```python
-# User input is directly concatenated into SQL query
-query = "SELECT * FROM users WHERE username = '" + username + "' AND password = '" + password + "'"
-results = database.execute(query)
-```
-
-**Severity:** Critical
-
-**Impact:** An attacker could inject malicious SQL code to bypass authentication, extract sensitive data, or delete database contents.
-
-**Remediation:**
-- Use parameterized queries or prepared statements
-- Never concatenate user input directly into queries
-
-**Secure Code Example:**
-```python
-# Using parameterized query
-query = "SELECT * FROM users WHERE username = ? AND password = ?"
-results = database.execute(query, (username, password))
-```
-
-## Authentication Issues
-
-### 1. Weak Password Storage
-
-**Vulnerable Code (Lines 78-80):**
-```python
-# Password is stored in plaintext
-new_user = {
-    "username": username,
-    "password": password
-}
-database.users.insert(new_user)
-```
-
-**Severity:** High
-
-**Impact:** If the database is compromised, all user passwords would be exposed in plaintext, potentially affecting users' accounts on other services if they reuse passwords.
-
-**Remediation:**
-- Use strong, salted password hashing (bcrypt, Argon2, etc.)
-- Never store plaintext passwords
-
-**Secure Code Example:**
-```python
-# Using bcrypt for password hashing
-import bcrypt
-
-# Generate salt and hash password
-salt = bcrypt.gensalt()
-hashed_password = bcrypt.hashpw(password.encode(), salt)
-
-new_user = {
-    "username": username,
-    "password": hashed_password
-}
-database.users.insert(new_user)
-```
-
-## Data Exposure
-
-### 1. Sensitive Information in Logs
-
-**Vulnerable Code (Line 112):**
-```python
-logger.info(f"User {username} authenticated successfully")
-```
-
-**Severity:** High
-
-**Impact:** Passwords and other sensitive information are written to log files, which might be accessible to unauthorized personnel or exposed in case of a breach.
-
-**Remediation:**
-- Never log sensitive information like passwords, tokens, or personal data
-- Implement proper log sanitization
-
-**Secure Code Example:**
-```python
-logger.info(f"User {username} authenticated successfully")
-```
-"""
-        
-        return mock_response
+        logger.info(f"Getting AI security analysis for {language} code...")
+        try:
+            ai_result = await self.ai_service.generate_text(
+                prompt=prompt,
+                agent_id=agent_id,
+                task_id=task_id,
+                temperature=0.1,
+                max_tokens=2000,
+            )
+            
+            logger.info("Successfully received security analysis from AI.")
+            return ai_result.get("content", "")
+                    
+        except Exception as e:
+            logger.error(f"Error getting AI security analysis: {e}", exc_info=True)
+            # Re-raise the exception to be handled by the main analyze_security function
+            raise Exception(f"Error calling AI service for security analysis: {str(e)}")
     
     def _parse_security_response(self, content: str) -> Dict[str, Any]:
-        """Parse the AI-generated security analysis into structured data."""
+        """Parse the AI-generated security response into structured data."""
+        # This regex is a placeholder and may need to be refined based on actual AI output
         result = {
             "summary": "",
             "vulnerabilities": [],

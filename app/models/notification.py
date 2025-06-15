@@ -28,7 +28,7 @@ class Notification(Base, TimestampMixin):
     title = Column(String(128), nullable=False)
     message = Column(Text, nullable=False)
     is_read = Column(Boolean, default=False)
-    metadata = Column(JSON)  # Additional data related to the notification
+    extra_data = Column(JSON)  # Additional data related to the notification
     recipient_id = Column(Integer, ForeignKey('users.id'), nullable=False)
     sender_id = Column(Integer, ForeignKey('users.id'))
     project_id = Column(Integer, ForeignKey('projects.id'))

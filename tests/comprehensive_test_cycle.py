@@ -51,7 +51,7 @@ class AIProviderManager:
             'openai': {
                 'api_key': 'your-openai-api-key-here',
                 'base_url': 'https://api.openai.com/v1',
-                'model': 'gpt-4'
+                'model': 'gpt-4o'
             },
             'gemini': {
                 'api_key': None,  # To be set by user
@@ -91,7 +91,7 @@ class AIProviderManager:
             client = genai.Client(api_key=self.providers['gemini']['api_key'])
             # Test basic connection
             response = client.models.generate_content(
-                model='gemini-1.5-flash',
+                model='gemini-2.0-flash',
                 contents='Hello, test connection'
             )
             return True

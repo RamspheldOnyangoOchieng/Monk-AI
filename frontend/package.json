@@ -1,5 +1,5 @@
 {
-  "name": "traedevmate-frontend",
+  "name": "monk-ai-frontend",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -11,34 +11,36 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.68",
-    "@types/react": "^18.2.42",
+    "@types/node": "^20",
+    "@types/react": "^18.2.17",
     "@types/react-dom": "^18.2.17",
     "@types/react-syntax-highlighter": "15.5.13",
+    "@vercel/node": "^3.0.0",
     "axios": "^1.6.2",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.0.0",
     "framer-motion": "^10.16.5",
-    "prismjs": "1.30.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "lucide-react": "^0.344.0",
+    "next": "14.0.4",
+    "react": "^18",
+    "react-dom": "^18",
     "react-router-dom": "^6.20.1",
     "react-scripts": "5.0.1",
     "react-syntax-highlighter": "15.6.1",
-    "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4",
-    "@radix-ui/react-slot": "^1.0.2",
-    "class-variance-authority": "^0.7.0",
-    "clsx": "^2.0.0",
-    "next": "14.0.4",
+    "react-to-pdf": "^1.0.0",
     "tailwind-merge": "^2.1.0",
-    "tailwindcss": "^3.3.0"
+    "tailwindcss": "^3.3.0",
+    "typescript": "^4.9.5",
+    "vercel": "^32.5.0",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "dev": "react-scripts start",
+    "build": "GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "dev": "next dev",
-    "lint": "next lint"
+    "vercel-build": "react-scripts build"
   },
   "eslintConfig": {
     "extends": [

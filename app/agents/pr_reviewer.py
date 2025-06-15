@@ -2,17 +2,19 @@ from typing import List, Dict, Any
 import os
 import re
 import time
-import requests
+import httpx
 from datetime import datetime
-from openai import OpenAI
-from anthropic import Anthropic
+from sqlalchemy.orm import Session
+from app.core.ai_service import AIService
+from app.core.database import SessionLocal
 
 class PRReviewer:
     """Advanced Pull Request Reviewer with complexity scoring and impact assessment."""
     
-    def __init__(self):
-        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    def __init__(self, db_session: Session = None):
+        """Initialize the PRReviewer agent."""
+        self.db_session = db_session or SessionLocal()
+        self.ai_service = AIService(session=self.db_session)
         
         # PR complexity scoring weights
         self.complexity_weights = {
@@ -44,7 +46,7 @@ class PRReviewer:
             "tests": {"weight": 0.4, "color": "#00796B"}
         }
 
-    async def review_pr(self, pr_url: str, repository: str, branch: str = "main") -> Dict[str, Any]:
+    async def review_pr(self, pr_url: str, repository: str, branch: str = "main", agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """
         Review a pull request with advanced complexity scoring and impact assessment.
         """
@@ -58,13 +60,13 @@ class PRReviewer:
             complexity_analysis = self._analyze_pr_complexity(pr_details)
             
             # Analyze code changes with advanced metrics
-            code_analysis = await self._analyze_code_changes(pr_details)
+            code_analysis = await self._analyze_code_changes(pr_details, agent_id=agent_id, task_id=task_id)
             
             # Assess impact and risk
             impact_assessment = self._assess_pr_impact(pr_details, code_analysis)
             
             # Generate review comments with AI
-            review_comments = await self._generate_review_comments(code_analysis, complexity_analysis)
+            review_comments = await self._generate_review_comments(code_analysis, complexity_analysis, agent_id=agent_id, task_id=task_id)
             
             # Calculate overall review score
             review_score = self._calculate_review_score(complexity_analysis, code_analysis, impact_assessment)
@@ -301,19 +303,20 @@ class PRReviewer:
         if github_token:
             headers["Authorization"] = f"token {github_token}"
         
-        # Fetch PR details
-        pr_response = requests.get(pr_endpoint, headers=headers)
-        if pr_response.status_code != 200:
-            raise Exception(f"Failed to fetch PR details: {pr_response.status_code} {pr_response.text}")
+        async with httpx.AsyncClient() as client:
+            # Fetch PR details
+            pr_response = await client.get(pr_endpoint, headers=headers)
+            if pr_response.status_code != 200:
+                raise Exception(f"Failed to fetch PR details: {pr_response.status_code} {pr_response.text}")
+                
+            pr_data = pr_response.json()
             
-        pr_data = pr_response.json()
-        
-        # Fetch PR files
-        files_response = requests.get(files_endpoint, headers=headers)
-        if files_response.status_code != 200:
-            raise Exception(f"Failed to fetch PR files: {files_response.status_code} {files_response.text}")
-            
-        files_data = files_response.json()
+            # Fetch PR files
+            files_response = await client.get(files_endpoint, headers=headers)
+            if files_response.status_code != 200:
+                raise Exception(f"Failed to fetch PR files: {files_response.status_code} {files_response.text}")
+                
+            files_data = files_response.json()
         
         # Construct diff content
         diff_content = ""
@@ -334,11 +337,11 @@ class PRReviewer:
             "url": pr_url
         }
 
-    async def _analyze_code_changes(self, pr_details: Dict[str, Any]) -> Dict[str, Any]:
+    async def _analyze_code_changes(self, pr_details: Dict[str, Any], agent_id: int, task_id: int) -> Dict[str, Any]:
         """
         Analyze code changes using AI models.
         """
-        # Use Claude for code analysis
+        # Use centralized AI service
         analysis_prompt = f"""
         Analyze the following code changes and provide detailed feedback:
         {pr_details.get('diff', '')}
@@ -351,25 +354,31 @@ class PRReviewer:
         5. Documentation needs
         """
         
-        response = await self.anthropic_client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=1000,
-            messages=[{
-                "role": "user",
-                "content": analysis_prompt
-            }]
-        )
-        
-        return {
-            "analysis": response.content,
-            "raw_changes": pr_details.get('diff', '')
-        }
+        try:
+            response = await self.ai_service.generate_text(
+                prompt=analysis_prompt,
+                agent_id=agent_id,
+                task_id=task_id,
+                max_tokens=1000,
+                temperature=0.1
+            )
+            
+            return {
+                "analysis": response['content'],
+                "raw_changes": pr_details.get('diff', '')
+            }
+        except Exception as e:
+            print(f"Error analyzing code changes: {str(e)}")
+            return {
+                "analysis": "Basic analysis: Code changes detected. Manual review recommended.",
+                "raw_changes": pr_details.get('diff', '')
+            }
 
-    async def _generate_review_comments(self, analysis: Dict[str, Any], complexity_analysis: Dict[str, Any]) -> Dict[str, Any]:
+    async def _generate_review_comments(self, analysis: Dict[str, Any], complexity_analysis: Dict[str, Any], agent_id: int, task_id: int) -> Dict[str, Any]:
         """
         Generate review comments based on code analysis.
         """
-        # Use GPT-4o for generating review comments
+        # Use AI for generating review comments
         review_prompt = f"""
         Based on the following code analysis, generate a structured PR review:
         {analysis['analysis']}
@@ -381,17 +390,20 @@ class PRReviewer:
         4. Performance considerations
         """
         
-        response = await self.openai_client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=[{
-                "role": "user",
-                "content": review_prompt
-            }],
-            temperature=0.7
-        )
-        
-        # Parse the response content
-        content = response.choices[0].message.content
+        try:
+            response = await self.ai_service.generate_text(
+                prompt=review_prompt,
+                agent_id=agent_id,
+                task_id=task_id,
+                max_tokens=1500,
+                temperature=0.7
+            )
+            
+            # Parse the response content
+            content = response['content']
+        except Exception as e:
+            print(f"Error generating review comments: {str(e)}")
+            content = "Basic review: Please manually review the changes for quality, security, and performance considerations."
         
         # Extract different sections from the response
         suggestions = self._extract_suggestions(content)

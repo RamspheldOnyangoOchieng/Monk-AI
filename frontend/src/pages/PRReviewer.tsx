@@ -25,6 +25,7 @@ import {
   Error as ErrorIcon,
   GitHub as GitHubIcon
 } from '@mui/icons-material';
+import axios from 'axios';
 
 interface PRReviewResult {
   review_summary: {
@@ -86,24 +87,13 @@ const PRReviewer: React.FC = () => {
     setResult(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/review-pr', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          pr_url: prUrl,
-          repository: repository,
-          branch: branch
-        })
+      const response = await axios.post('http://localhost:8000/api/review-pr', {
+        pr_url: prUrl,
+        repository: repository,
+        branch: branch
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setResult(data);
+      setResult(response.data);
     } catch (error) {
       console.error('PR Review failed:', error);
       setError(error instanceof Error ? error.message : 'Failed to review PR');

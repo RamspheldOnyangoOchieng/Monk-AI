@@ -52,4 +52,8 @@ class ProjectRepository(BaseRepository[Project]):
         return (db.query(Project)
                 .filter(Project.programming_language == language)
                 .filter(Project.status == ProjectStatus.ACTIVE)
-                .offset(skip).limit(limit).all()) 
+                .offset(skip).limit(limit).all())
+
+
+# Create instance for import
+project_crud = ProjectRepository()
