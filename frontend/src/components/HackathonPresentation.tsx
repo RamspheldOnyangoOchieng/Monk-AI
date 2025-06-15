@@ -58,6 +58,17 @@ interface Slide {
   background?: string;
 }
 
+interface TeamMember {
+  name: string;
+  email: string;
+  photo_url?: string;
+  github?: string;
+  linkedin?: string;
+  twitter?: string;
+  website?: string;
+  other?: string;
+}
+
 // --- VercelBlobImageUpload Component ---
 interface VercelBlobImageUploadProps {
   label: string;
@@ -147,7 +158,7 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
     setForm(f => ({ ...f, photo_url: url }));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!form.name || !form.email) {
       setError('Name and email are required');
@@ -162,13 +173,13 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
     <Card sx={{ p: 2, mb: 2, background: 'rgba(0,255,136,0.04)', border: '1px solid #00ff8830' }}>
       <form onSubmit={handleSubmit}>
         <VercelBlobImageUpload label="Upload Photo" onUpload={handlePhotoUpload} initialUrl={form.photo_url} />
-        <TextField label="Name" value={form.name} onChange={e => handleChange('name', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} required />
-        <TextField label="Email (unique)" value={form.email} onChange={e => handleChange('email', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} required type="email" />
-        <TextField label="GitHub URL" value={form.github} onChange={e => handleChange('github', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
-        <TextField label="LinkedIn URL" value={form.linkedin} onChange={e => handleChange('linkedin', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
-        <TextField label="Twitter URL" value={form.twitter} onChange={e => handleChange('twitter', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
-        <TextField label="Website" value={form.website} onChange={e => handleChange('website', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
-        <TextField label="Other Link" value={form.other} onChange={e => handleChange('other', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="Name" value={form.name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('name', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} required />
+        <TextField label="Email (unique)" value={form.email} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('email', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} required type="email" />
+        <TextField label="GitHub URL" value={form.github} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('github', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="LinkedIn URL" value={form.linkedin} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('linkedin', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="Twitter URL" value={form.twitter} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('twitter', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="Website" value={form.website} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('website', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="Other Link" value={form.other} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange('other', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
         {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
         <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>{loading ? 'Saving...' : 'Submit/Update'}</Button>
       </form>
@@ -985,7 +996,7 @@ const HackathonPresentation: React.FC = () => {
 
 // --- TeamLinksSection ---
 const TeamLinksSection = () => {
-  const [teamLinks, setTeamLinks] = useState([]);
+  const [teamLinks, setTeamLinks] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(false);
   const [refresh, setRefresh] = useState(0);
 
@@ -995,7 +1006,7 @@ const TeamLinksSection = () => {
       .then(setTeamLinks);
   }, [refresh]);
 
-  const handleSubmit = async (member) => {
+  const handleSubmit = async (member: TeamMember) => {
     setLoading(true);
     await fetch('/api/team-links', {
       method: 'POST',
