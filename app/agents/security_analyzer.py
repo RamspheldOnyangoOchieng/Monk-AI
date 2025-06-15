@@ -411,6 +411,8 @@ class SecurityAnalyzer:
                 prompt=prompt,
                 agent_id=agent_id,
                 task_id=task_id,
+                temperature=0.1,
+                max_tokens=2000,
             )
             
             logger.info("Successfully received security analysis from AI.")

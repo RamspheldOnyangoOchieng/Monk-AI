@@ -1,24 +1,26 @@
 from typing import Dict, Any, List
 import os
 import re
-from typing import Dict, Any
-from app.core.ai_service import ai_service
+from sqlalchemy.orm import Session
+from app.core.ai_service import AIService
+from app.core.database import SessionLocal
 
 class DocGenerator:
-    def __init__(self):
-        # Use centralized AI service (OpenAI only for hackathon)
-        self.ai_service = ai_service
+    def __init__(self, db_session: Session = None):
+        """Initialize the DocGenerator agent."""
+        self.db_session = db_session or SessionLocal()
+        self.ai_service = AIService(session=self.db_session)
 
-    async def generate_docs(self, code: str, language: str, context: str = None) -> Dict[str, Any]:
+    async def generate_docs(self, code: str, language: str, context: str = None, agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """
         Generate documentation for the provided code.
         """
         try:
             # Analyze code structure
-            code_analysis = await self._analyze_code(code, language)
+            code_analysis = await self._analyze_code(code, language, agent_id=agent_id, task_id=task_id)
             
             # Generate documentation
-            documentation = await self._generate_documentation(code_analysis, context)
+            documentation = await self._generate_documentation(code_analysis, context, agent_id=agent_id, task_id=task_id)
             
             return {
                 "status": "success",
@@ -32,11 +34,11 @@ class DocGenerator:
         except Exception as e:
             raise Exception(f"Error generating documentation: {str(e)}")
 
-    async def _analyze_code(self, code: str, language: str) -> Dict[str, Any]:
+    async def _analyze_code(self, code: str, language: str, agent_id: int, task_id: int) -> Dict[str, Any]:
         """
         Analyze the code structure and identify key components.
         """
-        # Use centralized AI service (OpenAI only for hackathon)
+        # Use centralized AI service
         try:
             analysis_prompt = f"""
             Analyze the following {language} code and identify:
@@ -50,28 +52,27 @@ class DocGenerator:
             {code}
             """
             
-            ai_result = await self.ai_service.generate_ai_response(
+            ai_result = await self.ai_service.generate_text(
                 prompt=analysis_prompt,
+                agent_id=agent_id,
+                task_id=task_id,
                 max_tokens=1000,
                 temperature=0.3
             )
-            
-            if not ai_result["success"]:
-                raise Exception(f"AI analysis failed: {ai_result['error']}")
 
             return {
-                "analysis": ai_result["response"],
+                "analysis": ai_result['content'],
                 "raw_code": code
             }
         except Exception as e:
             # Re-raise exception to be handled by the main generate_docs function
             raise Exception(f"Error analyzing code: {str(e)}")
 
-    async def _generate_documentation(self, analysis: Dict[str, Any], context: str = None) -> Dict[str, Any]:
+    async def _generate_documentation(self, analysis: Dict[str, Any], context: str = None, agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """
         Generate comprehensive documentation based on code analysis.
         """
-        # Use centralized AI service (OpenAI only for hackathon)
+        # Use centralized AI service
         try:
             doc_prompt = f"""
             Generate comprehensive documentation based on the following code analysis:
@@ -87,16 +88,15 @@ class DocGenerator:
             5. Best practices and notes
             """
             
-            ai_result = await self.ai_service.generate_ai_response(
+            ai_result = await self.ai_service.generate_text(
                 prompt=doc_prompt,
+                agent_id=agent_id,
+                task_id=task_id,
                 max_tokens=2000,
                 temperature=0.7
             )
-
-            if not ai_result["success"]:
-                raise Exception(f"AI documentation generation failed: {ai_result['error']}")
             
-            content = ai_result["response"]
+            content = ai_result['content']
             
             # Extract different sections from the response
             overview = self._extract_overview(content)

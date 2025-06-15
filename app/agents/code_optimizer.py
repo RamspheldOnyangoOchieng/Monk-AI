@@ -7,7 +7,9 @@ import ast
 import httpx
 from typing import Dict, List, Any, Optional, Tuple
 from collections import defaultdict
-from app.core.ai_service import ai_service
+from sqlalchemy.orm import Session
+from app.core.ai_service import AIService
+from app.core.database import SessionLocal
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,10 +17,10 @@ logger = logging.getLogger(__name__)
 class CodeOptimizer:
     """Advanced Agent for analyzing code and providing optimization suggestions with performance metrics."""
     
-    def __init__(self):
+    def __init__(self, db_session: Session = None):
         """Initialize the CodeOptimizer agent."""
-        # Use centralized AI service (OpenAI only for hackathon)
-        self.ai_service = ai_service
+        self.db_session = db_session or SessionLocal()
+        self.ai_service = AIService(session=self.db_session)
         
         # Enhanced optimization categories with scoring
         self.categories = {
@@ -49,7 +51,9 @@ class CodeOptimizer:
             ai_result = await self.ai_service.generate_text(
                 prompt=prompt,
                 agent_id=agent_id,
-                task_id=task_id
+                task_id=task_id,
+                temperature=0.2,
+                max_tokens=2000
             )
             
             response_content = ai_result.get("content", "")

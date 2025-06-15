@@ -1,0 +1,52 @@
+react-dom.development.js:29895 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+deprecations.ts:9 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ deprecations.ts:9
+deprecations.ts:9 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ deprecations.ts:9
+via.placeholder.com/40:1 
+            
+            
+           Failed to load resource: net::ERR_CONNECTION_TIMED_OUT
+MultiAgentOrchestrator.tsx:318 Failed to load demo scenarios: AxiosError
+loadDemoScenarios @ MultiAgentOrchestrator.tsx:318
+:8000/api/workflow/demo/scenarios:1 
+            
+            
+           Failed to load resource: net::ERR_CONNECTION_REFUSED
+MultiAgentOrchestrator.tsx:358 Failed to load live metrics: AxiosError
+loadLiveMetrics @ MultiAgentOrchestrator.tsx:358
+:8000/api/workflow/demo/live-metrics:1 
+            
+            
+           Failed to load resource: net::ERR_CONNECTION_REFUSED
+MultiAgentOrchestrator.tsx:318 Failed to load demo scenarios: AxiosError
+loadDemoScenarios @ MultiAgentOrchestrator.tsx:318
+:8000/api/workflow/demo/scenarios:1 
+            
+            
+           Failed to load resource: net::ERR_CONNECTION_REFUSED
+MultiAgentOrchestrator.tsx:358 Failed to load live metrics: AxiosError
+loadLiveMetrics @ MultiAgentOrchestrator.tsx:358
+:8000/api/workflow/demo/live-metrics:1 
+            
+            
+           Failed to load resource: net::ERR_CONNECTION_REFUSED
+orchestrator:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+orchestrator:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+orchestrator:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+:8000/api/workflow/execute:1 
+            
+            
+           Failed to load resource: net::ERR_CONNECTION_REFUSED
+MultiAgentOrchestrator.tsx:755 Workflow execution failed: TypeError: Failed to fetch
+    at executeWorkflow (MultiAgentOrchestrator.tsx:693:1)
+    at HTMLUnknownElement.callCallback (react-dom.development.js:4164:1)
+    at Object.invokeGuardedCallbackDev (react-dom.development.js:4213:1)
+    at invokeGuardedCallback (react-dom.development.js:4277:1)
+    at invokeGuardedCallbackAndCatchFirstError (react-dom.development.js:4291:1)
+    at executeDispatch (react-dom.development.js:9041:1)
+    at processDispatchQueueItemsInOrder (react-dom.development.js:9073:1)
+    at processDispatchQueue (react-dom.development.js:9086:1)
+    at dispatchEventsForPlugins (react-dom.development.js:9097:1)
+    at react-dom.development.js:9288:1
+executeWorkflow @ MultiAgentOrchestrator.tsx:755
