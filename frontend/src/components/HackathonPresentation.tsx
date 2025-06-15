@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import {
     AutoFixHigh,
     CheckCircleOutline,
@@ -26,10 +27,6 @@ import {
     Avatar,
     Box,
     Button,
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
     Chip,
     Container,
     Divider,
@@ -50,7 +47,10 @@ import {
     useTheme
 } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
-import React, { useEffect, useState } from 'react';
+import { Button as ShadcnButton } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
+import { usePDF } from 'react-to-pdf';
 
 interface Slide {
   id: number;
@@ -264,9 +264,9 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
             sx={{ mb: 1 }} 
           />
           {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
-          <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+          <ShadcnButton type="submit" disabled={loading}>
             {loading ? 'Saving...' : 'Submit/Update'}
-          </Button>
+          </ShadcnButton>
         </form>
       </CardContent>
     </Card>
