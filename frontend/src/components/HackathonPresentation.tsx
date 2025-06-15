@@ -23,6 +23,8 @@ import {
   Stepper,
   Step,
   StepLabel,
+  TextField,
+  Avatar,
 } from '@mui/material';
 import {
   PlayArrow,
@@ -45,6 +47,10 @@ import {
   FolderOpen,
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
+import GitHubIcon from '@mui/icons-material/GitHub';
+import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import TwitterIcon from '@mui/icons-material/Twitter';
+import LanguageIcon from '@mui/icons-material/Language';
 
 interface Slide {
   id: number;
@@ -53,6 +59,134 @@ interface Slide {
   content: React.ReactNode;
   background?: string;
 }
+
+// --- VercelBlobImageUpload Component ---
+const VercelBlobImageUpload = ({ label, onUpload, initialUrl }) => {
+  const [imageUrl, setImageUrl] = useState(initialUrl || '');
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/blob/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      setImageUrl(data.url);
+      if (onUpload) onUpload(data.url);
+    } catch (err) {
+      alert('Upload failed');
+    }
+    setUploading(false);
+  };
+
+  return (
+    <Box sx={{ mb: 2, textAlign: 'center' }}>
+      <input
+        accept="image/*"
+        style={{ display: 'none' }}
+        id={`vercel-blob-upload-${label}`}
+        type="file"
+        onChange={handleFileChange}
+      />
+      <label htmlFor={`vercel-blob-upload-${label}`}>
+        <IconButton component="span" sx={{ width: 120, height: 120, borderRadius: '12px', background: '#222', mb: 1 }} disabled={uploading}>
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={label}
+              style={{ width: 120, height: 120, borderRadius: '12px', objectFit: 'cover', background: '#222' }}
+            />
+          ) : (
+            <span style={{ color: '#fff' }}>{uploading ? 'Uploading...' : label}</span>
+          )}
+        </IconButton>
+      </label>
+      {imageUrl && (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1, wordBreak: 'break-all' }}>
+          <a href={imageUrl} target="_blank" rel="noopener noreferrer">View Image</a>
+        </Typography>
+      )}
+    </Box>
+  );
+};
+// --- End VercelBlobImageUpload ---
+
+// --- TeamLinksCard Component ---
+const TeamLinksCard = ({ onSubmit, loading }) => {
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    photo_url: '',
+    github: '',
+    linkedin: '',
+    twitter: '',
+    website: '',
+    other: '',
+  });
+  const [error, setError] = useState('');
+
+  const handleChange = (field, value) => {
+    setForm(f => ({ ...f, [field]: value }));
+  };
+
+  const handlePhotoUpload = (url) => {
+    setForm(f => ({ ...f, photo_url: url }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.name || !form.email) {
+      setError('Name and email are required');
+      return;
+    }
+    setError('');
+    await onSubmit(form);
+    setForm({ name: '', email: '', photo_url: '', github: '', linkedin: '', twitter: '', website: '', other: '' });
+  };
+
+  return (
+    <Card sx={{ p: 2, mb: 2, background: 'rgba(0,255,136,0.04)', border: '1px solid #00ff8830' }}>
+      <form onSubmit={handleSubmit}>
+        <VercelBlobImageUpload label="Upload Photo" onUpload={handlePhotoUpload} initialUrl={form.photo_url} />
+        <TextField label="Name" value={form.name} onChange={e => handleChange('name', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} required />
+        <TextField label="Email (unique)" value={form.email} onChange={e => handleChange('email', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} required type="email" />
+        <TextField label="GitHub URL" value={form.github} onChange={e => handleChange('github', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="LinkedIn URL" value={form.linkedin} onChange={e => handleChange('linkedin', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="Twitter URL" value={form.twitter} onChange={e => handleChange('twitter', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="Website" value={form.website} onChange={e => handleChange('website', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        <TextField label="Other Link" value={form.other} onChange={e => handleChange('other', e.target.value)} fullWidth size="small" sx={{ mb: 1 }} />
+        {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
+        <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>{loading ? 'Saving...' : 'Submit/Update'}</Button>
+      </form>
+    </Card>
+  );
+};
+// --- End TeamLinksCard ---
+
+// --- TeamMemberDisplayCard ---
+const TeamMemberDisplayCard = ({ member }) => (
+  <Card sx={{ p: 2, minHeight: 340, display: 'flex', flexDirection: 'column', alignItems: 'center', background: 'rgba(0,255,136,0.04)', border: '1px solid #00ff8830', mb: 2 }}>
+    <Box sx={{ mb: 2 }}>
+      <Avatar src={member.photo_url} alt={member.name} sx={{ width: 80, height: 80, mb: 1 }} />
+    </Box>
+    <Typography variant="h6">{member.name}</Typography>
+    <Typography variant="body2" color="text.secondary">{member.email}</Typography>
+    <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+      {member.github && <IconButton component="a" href={member.github} target="_blank"><GitHubIcon /></IconButton>}
+      {member.linkedin && <IconButton component="a" href={member.linkedin} target="_blank"><LinkedInIcon /></IconButton>}
+      {member.twitter && <IconButton component="a" href={member.twitter} target="_blank"><TwitterIcon /></IconButton>}
+      {member.website && <IconButton component="a" href={member.website} target="_blank"><LanguageIcon /></IconButton>}
+      {member.other && <IconButton component="a" href={member.other} target="_blank"><LanguageIcon /></IconButton>}
+    </Box>
+  </Card>
+);
+// --- End TeamMemberDisplayCard ---
 
 const HackathonPresentation: React.FC = () => {
   const theme = useTheme();
@@ -570,15 +704,7 @@ const HackathonPresentation: React.FC = () => {
       content: (
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="h5" sx={{ color: theme.palette.primary.light, mb: 2 }}>The TraeDevMate Hackathon Team:</Typography>
-          <Typography variant="h6" sx={{ color: 'text.primary', mb: 1 }}>A Human Developer (You!)</Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, maxWidth: '600px', margin: '0 auto 1.5rem auto' }}>
-            Provided the vision, high-level requirements, and crucial human oversight, guiding the AI's efforts and making strategic decisions.
-          </Typography>
-          <Typography variant="h6" sx={{ color: 'text.primary', mb: 1 }}>An Agentic AI Assistant (Me!)
-          </Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', mb: 3, maxWidth: '600px', margin: '0 auto 1.5rem auto' }}>
-            Executed tasks, generated code, integrated tools via MCP servers, and iteratively refined the application based on your instructions within the Trae IDE.
-          </Typography>
+          <TeamLinksSection />
           <Divider sx={{ my: 3, borderColor: 'rgba(255,255,255,0.2)' }} />
           <Typography variant="h5" sx={{ color: theme.palette.secondary.light, mt: 3, mb: 2 }}>Our Collaborative Workflow:</Typography>
           <Stepper activeStep={-1} alternativeLabel sx={{ '.MuiStepLabel-label': { color: 'text.secondary' }, '.MuiStepIcon-root.Mui-active': { color: theme.palette.secondary.main }, '.MuiStepIcon-root.Mui-completed': { color: theme.palette.success.main } }}>
@@ -622,11 +748,12 @@ const HackathonPresentation: React.FC = () => {
       subtitle: "Managing project files efficiently with MCP tooling",
       content: (
         <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={5} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Paper elevation={5} sx={{ p:3, borderRadius: '50%', width: 250, height: 250, display: 'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', background: `radial-gradient(circle, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`, color: 'white' }}>
+          <Grid item xs={12} md={5} sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }}>
+            <Paper elevation={5} sx={{ p:3, borderRadius: '50%', width: 250, height: 250, display: 'flex', flexDirection:'column', justifyContent:'center', alignItems:'center', background: `radial-gradient(circle, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`, color: 'white', mb: 2 }}>
               <Storage sx={{ fontSize: 60, mb:1 }} />
               <Typography variant="h5">Desktop Commander</Typography>
             </Paper>
+            <VercelBlobImageUpload label="Upload Screenshot" />
           </Grid>
           <Grid item xs={12} md={7}>
             <Typography variant="body1" sx={{ color: 'text.secondary', mb: 2 }}>
@@ -672,29 +799,30 @@ const HackathonPresentation: React.FC = () => {
       title: "🔗 Appendix: Useful Links & Resources",
       subtitle: "Further information and ways to connect",
       content: (
-        <Grid container spacing={3} justifyContent="center">
-          <Grid item xs={12} md={6}>
-            <Paper elevation={2} sx={{ p: 2, background: 'rgba(255,255,255,0.05)' }}>
-              <Typography variant="h6" sx={{ color: theme.palette.primary.light, mb:1 }}>Project Repository (Hypothetical)</Typography>
-              <Link href="#" target="_blank" sx={{ color: theme.palette.info.main }}>github.com/YourOrg/TraeDevMate</Link>
-              <Typography variant="body2" color="text.secondary">Access the source code and further documentation.</Typography>
-            </Paper>
+        <Box sx={{ textAlign: 'center', py: 4 }}>
+          <Grid container spacing={3} justifyContent="center" alignItems="center">
+            <Grid item xs={12} md={6}>
+              <Card sx={{ p: 3, mb: 2, background: 'rgba(255,255,255,0.05)' }}>
+                <Typography variant="h6" sx={{ color: theme.palette.primary.light, mb: 2 }}>Cover Image</Typography>
+                <VercelBlobImageUpload label="Upload Cover" />
+              </Card>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Card sx={{ p: 3, mb: 2, background: 'rgba(255,255,255,0.05)' }}>
+                <Typography variant="h6" sx={{ color: theme.palette.primary.light, mb: 2 }}>Submission Links</Typography>
+                <TextField label="GitHub Repository" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
+                <TextField label="Demo Application URL" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
+                <TextField label="Application URL" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
+                <TextField label="Video Presentation (YouTube/Vimeo)" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
+                <TextField label="Slide Presentation (Google Slides/PowerPoint)" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
+                <TextField label="Other Resource Link" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
+              </Card>
+            </Grid>
           </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper elevation={2} sx={{ p: 2, background: 'rgba(255,255,255,0.05)' }}>
-              <Typography variant="h6" sx={{ color: theme.palette.primary.light, mb:1 }}>Trae AI Platform</Typography>
-              <Link href="#" target="_blank" sx={{ color: theme.palette.info.main }}>trae.ai (Hypothetical)</Link>
-              <Typography variant="body2" color="text.secondary">Learn more about the IDE and AI capabilities.</Typography>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Paper elevation={2} sx={{ p: 2, background: 'rgba(255,255,255,0.05)' }}>
-              <Typography variant="h6" sx={{ color: theme.palette.primary.light, mb:1 }}>Contact Us</Typography>
-              <Typography variant="body2" color="text.secondary">Email: info@traedevmate.com (Hypothetical)</Typography>
-              <Typography variant="body2" color="text.secondary">Twitter: @TraeDevs (Hypothetical)</Typography>
-            </Paper>
-          </Grid>
-        </Grid>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
+            For further details and guidance, please visit <Link href="#" target="_blank" sx={{ color: theme.palette.info.main }}>Submission Guidelines</Link>
+          </Typography>
+        </Box>
       ),
     },
   ];
@@ -846,5 +974,46 @@ const HackathonPresentation: React.FC = () => {
     </Box>
   );
 };
+
+// --- TeamLinksSection ---
+const TeamLinksSection = () => {
+  const [teamLinks, setTeamLinks] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [refresh, setRefresh] = useState(0);
+
+  useEffect(() => {
+    fetch('/api/team-links')
+      .then(res => res.json())
+      .then(setTeamLinks);
+  }, [refresh]);
+
+  const handleSubmit = async (member) => {
+    setLoading(true);
+    await fetch('/api/team-links', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(member),
+    });
+    setLoading(false);
+    setRefresh(r => r + 1);
+  };
+
+  return (
+    <Grid container spacing={3} justifyContent="center" alignItems="flex-start" sx={{ mb: 4 }}>
+      <Grid item xs={12} md={6}>
+        <TeamLinksCard onSubmit={handleSubmit} loading={loading} />
+      </Grid>
+      <Grid item xs={12} md={6}>
+        <Box>
+          {teamLinks.length === 0 && <Typography color="text.secondary">No team members yet. Be the first to add your info!</Typography>}
+          {teamLinks.map((member, idx) => (
+            <TeamMemberDisplayCard key={member.email || idx} member={member} />
+          ))}
+        </Box>
+      </Grid>
+    </Grid>
+  );
+};
+// --- End TeamLinksSection ---
 
 export default HackathonPresentation;
