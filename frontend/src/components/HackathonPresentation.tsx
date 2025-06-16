@@ -1,4 +1,3 @@
-import React, { useState, useEffect } from 'react';
 import {
     AutoFixHigh,
     CheckCircleOutline,
@@ -47,10 +46,9 @@ import {
     useTheme
 } from '@mui/material';
 import { AnimatePresence, motion } from 'framer-motion';
+import React, { useEffect, useState } from 'react';
 import { Button as ShadcnButton } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
-import { usePDF } from 'react-to-pdf';
 
 interface Slide {
   id: number;
@@ -287,28 +285,52 @@ const TeamMemberDisplayCard = ({ member }: TeamMemberDisplayCardProps) => (
       <Typography variant="body2" color="text.secondary" align="center">{member.email}</Typography>
     </CardHeader>
     <CardContent>
-      <Box className="flex gap-1 flex-wrap justify-center">
+      <div className="flex flex-col gap-2">
         {member.github && (
-          <IconButton href={member.github} target="_blank" size="small">
-            <GitHubIcon />
-          </IconButton>
+          <Link
+            href={member.github}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+          >
+            <GitHubIcon className="w-5 h-5" />
+            <span>GitHub</span>
+          </Link>
         )}
         {member.linkedin && (
-          <IconButton href={member.linkedin} target="_blank" size="small">
-            <LinkedInIcon />
-          </IconButton>
+          <Link
+            href={member.linkedin}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+          >
+            <LinkedInIcon className="w-5 h-5" />
+            <span>LinkedIn</span>
+          </Link>
         )}
         {member.twitter && (
-          <IconButton href={member.twitter} target="_blank" size="small">
-            <TwitterIcon />
-          </IconButton>
+          <Link
+            href={member.twitter}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+          >
+            <TwitterIcon className="w-5 h-5" />
+            <span>Twitter</span>
+          </Link>
         )}
         {member.website && (
-          <IconButton href={member.website} target="_blank" size="small">
-            <LanguageIcon />
-          </IconButton>
+          <Link
+            href={member.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+          >
+            <LanguageIcon className="w-5 h-5" />
+            <span>Website</span>
+          </Link>
         )}
-      </Box>
+      </div>
     </CardContent>
   </Card>
 );
@@ -381,16 +403,7 @@ const HackathonPresentation: React.FC = () => {
                 transition={{ delay: index * 0.1, duration: 0.5 }}
               >
                 <Card
-                  sx={{
-                    height: '100%',
-                    background: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)',
-                    border: `1px solid ${theme.palette.primary.main}30`,
-                    '&:hover': {
-                      transform: 'translateY(-5px)',
-                      boxShadow: `0 10px 30px ${theme.palette.primary.main}20`,
-                    },
-                    transition: 'all 0.3s ease',
-                  }}
+                  className="h-full bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] border border-primary/30 hover:transform hover:scale-[1.02] hover:shadow-lg transition-all duration-300"
                 >
                   <CardContent>
                     <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
@@ -536,26 +549,10 @@ const HackathonPresentation: React.FC = () => {
                 whileHover={{ scale: 1.05, rotateY: 5 }}
               >
                 <Card
-                  sx={{
-                    height: 250,
-                    background: highlight.gradient,
-                    color: 'white',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background: 'rgba(0,0,0,0.3)',
-                      zIndex: 1,
-                    },
-                  }}
+                  className="h-[250px] relative overflow-hidden bg-gradient-to-br from-[#1a1a1a] to-[#2a2a2a] text-white before:content-[''] before:absolute before:inset-0 before:bg-black/30 before:z-[1]"
                 >
-                  <CardContent sx={{ position: 'relative', zIndex: 2, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                    <Box sx={{ textAlign: 'center', mb: 2 }}>
+                  <CardContent className="relative z-[2] h-full flex flex-col justify-center">
+                    <Box className="text-center mb-2">
                       {React.cloneElement(highlight.icon, { sx: { fontSize: 48 } })}
                     </Box>
                     <Typography variant="h6" gutterBottom textAlign="center" fontWeight="bold">
@@ -650,33 +647,33 @@ const HackathonPresentation: React.FC = () => {
       content: (
         <Grid container spacing={3} justifyContent="center">
           <Grid item xs={12} md={4}>
-            <Card sx={{ background: 'linear-gradient(145deg, #2b2b2b, #1e1e1e)', border: `1px solid ${theme.palette.primary.main}40`, height: '100%' }}>
+            <Card className="h-full bg-gradient-to-br from-[#2b2b2b] to-[#1e1e1e] border border-primary/40">
               <CardContent>
-                <Typography variant="h6" color="primary" sx={{ mb: 1 }}>Backend: FastAPI (Python)</Typography>
-                <Chip label="Python" color="primary" variant="outlined" sx={{ mb: 1 }} />
+                <Typography variant="h6" color="primary" className="mb-1">Backend: FastAPI (Python)</Typography>
+                <Chip label="Python" color="primary" variant="outlined" className="mb-1" />
                 <Typography variant="body2" color="text.secondary">Robust, high-performance API for agent orchestration and core logic.</Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} md={4}>
-            <Card sx={{ background: 'linear-gradient(145deg, #2b2b2b, #1e1e1e)', border: `1px solid ${theme.palette.secondary.main}40`, height: '100%' }}>
+            <Card className="h-full bg-gradient-to-br from-[#2b2b2b] to-[#1e1e1e] border border-secondary/40">
               <CardContent>
-                <Typography variant="h6" color="secondary" sx={{ mb: 1 }}>Frontend: React + MUI</Typography>
-                <Chip label="React" color="secondary" variant="outlined" sx={{ mb: 1 }} />
-                <Chip label="TypeScript" color="secondary" variant="outlined" sx={{ mb: 1, ml: 0.5 }} />
-                <Chip label="Material-UI" color="secondary" variant="outlined" sx={{ mb: 1, ml: 0.5 }} />
-                <Chip label="Framer Motion" color="secondary" variant="outlined" sx={{ mb: 1, ml: 0.5 }} />
+                <Typography variant="h6" color="secondary" className="mb-1">Frontend: React + MUI</Typography>
+                <Chip label="React" color="secondary" variant="outlined" className="mb-1" />
+                <Chip label="TypeScript" color="secondary" variant="outlined" className="mb-1" />
+                <Chip label="Material-UI" color="secondary" variant="outlined" className="mb-1" />
+                <Chip label="Framer Motion" color="secondary" variant="outlined" className="mb-1" />
                 <Typography variant="body2" color="text.secondary">Modern, responsive, and engaging user interface with smooth animations.</Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} md={4}>
-            <Card sx={{ background: 'linear-gradient(145deg, #2b2b2b, #1e1e1e)', border: `1px solid ${theme.palette.primary.light}40`, height: '100%' }}>
+            <Card className="h-full bg-gradient-to-br from-[#2b2b2b] to-[#1e1e1e] border border-primary/40">
               <CardContent>
-                <Typography variant="h6" color="primary" sx={{ mb: 1 }}>AI & Tooling: Trae AI</Typography>
-                <Chip label="Trae AI Platform" color="primary" variant="outlined" sx={{ mb: 1 }} />
-                <Chip label="Novita.ai Image Gen" color="primary" variant="outlined" sx={{ mb: 1, ml: 0.5 }} />
-                <Chip label="MCP Servers" color="primary" variant="outlined" sx={{ mb: 1, ml: 0.5 }} />
+                <Typography variant="h6" color="primary" className="mb-1">AI & Tooling: Trae AI</Typography>
+                <Chip label="Trae AI Platform" color="primary" variant="outlined" className="mb-1" />
+                <Chip label="Novita.ai Image Gen" color="primary" variant="outlined" className="mb-1" />
+                <Chip label="MCP Servers" color="primary" variant="outlined" className="mb-1" />
                 <Typography variant="body2" color="text.secondary">Leveraging cutting-edge AI for development, integrated via modular MCPs.</Typography>
               </CardContent>
             </Card>
@@ -718,25 +715,25 @@ const HackathonPresentation: React.FC = () => {
       content: (
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
-            <Card sx={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', height: '100%' }}>
+            <Card className="h-full bg-gradient-to-br from-[#2b2b2b] to-[#1e1e1e] border border-primary/40">
               <CardContent>
-                <Typography variant="h6" color="primary" sx={{ mb: 1 }}>Reduced Cognitive Load</Typography>
+                <Typography variant="h6" color="primary" className="mb-1">Reduced Cognitive Load</Typography>
                 <Typography variant="body2" color="text.secondary">Automating boilerplate, suggesting code, and managing context allows developers to focus on complex problem-solving rather than mundane tasks.</Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} md={4}>
-            <Card sx={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', height: '100%' }}>
+            <Card className="h-full bg-gradient-to-br from-[#2b2b2b] to-[#1e1e1e] border border-secondary/40">
               <CardContent>
-                <Typography variant="h6" color="secondary" sx={{ mb: 1 }}>Faster Prototyping & Iteration</Typography>
+                <Typography variant="h6" color="secondary" className="mb-1">Faster Prototyping & Iteration</Typography>
                 <Typography variant="body2" color="text.secondary">Quickly generate UI components, backend logic, and even entire features, enabling rapid validation of ideas and faster feedback loops.</Typography>
               </CardContent>
             </Card>
           </Grid>
           <Grid item xs={12} md={4}>
-            <Card sx={{ background: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', height: '100%' }}>
+            <Card className="h-full bg-gradient-to-br from-[#2b2b2b] to-[#1e1e1e] border border-primary/40">
               <CardContent>
-                <Typography variant="h6" color="primary" sx={{ mb: 1 }}>Enhanced Learning & Skill Up</Typography>
+                <Typography variant="h6" color="primary" className="mb-1">Enhanced Learning & Skill Up</Typography>
                 <Typography variant="body2" color="text.secondary">Working alongside AI provides learning opportunities, exposing developers to new patterns, libraries, and best practices in real-time.</Typography>
               </CardContent>
             </Card>
