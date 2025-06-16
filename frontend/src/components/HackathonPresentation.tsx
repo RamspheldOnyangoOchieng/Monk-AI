@@ -200,8 +200,8 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
         <CardTitle>Team Member Details</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
-          <VercelBlobImageUpload label="Upload Photo" onUpload={handlePhotoUpload} initialUrl={form.photo_url} />
+      <form onSubmit={handleSubmit}>
+        <VercelBlobImageUpload label="Upload Photo" onUpload={handlePhotoUpload} initialUrl={form.photo_url} />
           <TextField 
             label="Name" 
             value={form.name} 
@@ -261,11 +261,11 @@ const TeamLinksCard = ({ onSubmit, loading }: TeamLinksCardProps) => {
             size="small" 
             sx={{ mb: 1 }} 
           />
-          {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
+        {error && <Typography color="error" sx={{ mb: 1 }}>{error}</Typography>}
           <ShadcnButton type="submit" disabled={loading}>
             {loading ? 'Saving...' : 'Submit/Update'}
           </ShadcnButton>
-        </form>
+      </form>
       </CardContent>
     </Card>
   );
@@ -931,14 +931,14 @@ const HackathonPresentation: React.FC = () => {
               </Card>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Card sx={{ p: 3, mb: 2, background: 'rgba(255,255,255,0.05)' }}>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.light, mb: 2 }}>Submission Links</Typography>
-                <TextField label="GitHub Repository" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
-                <TextField label="Demo Application URL" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
-                <TextField label="Application URL" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
-                <TextField label="Video Presentation (YouTube/Vimeo)" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
-                <TextField label="Slide Presentation (Google Slides/PowerPoint)" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
-                <TextField label="Other Resource Link" variant="outlined" size="small" fullWidth sx={{ mb: 2 }} />
+              <Card className="p-3 mb-2 bg-white/5">
+                <Typography variant="h6" className="text-primary-light mb-2">Submission Links</Typography>
+                <TextField label="GitHub Repository" variant="outlined" size="small" fullWidth className="mb-2" />
+                <TextField label="Demo Application URL" variant="outlined" size="small" fullWidth className="mb-2" />
+                <TextField label="Application URL" variant="outlined" size="small" fullWidth className="mb-2" />
+                <TextField label="Video Presentation (YouTube/Vimeo)" variant="outlined" size="small" fullWidth className="mb-2" />
+                <TextField label="Slide Presentation (Google Slides/PowerPoint)" variant="outlined" size="small" fullWidth className="mb-2" />
+                <TextField label="Other Resource Link" variant="outlined" size="small" fullWidth className="mb-2" />
               </Card>
             </Grid>
           </Grid>
@@ -1134,7 +1134,7 @@ const TeamLinksSection = ({ onRefresh }: TeamLinksSectionProps) => {
   };
 
   return (
-    <Box>
+        <Box>
       <Typography variant="h5" gutterBottom>Team Members</Typography>
       <Grid container spacing={2}>
         {teamLinks.map((member, index) => (
