@@ -925,8 +925,8 @@ const HackathonPresentation: React.FC = () => {
         <Box sx={{ textAlign: 'center', py: 4 }}>
           <Grid container spacing={3} justifyContent="center" alignItems="center">
             <Grid item xs={12} md={6}>
-              <Card sx={{ p: 3, mb: 2, background: 'rgba(255,255,255,0.05)' }}>
-                <Typography variant="h6" sx={{ color: theme.palette.primary.light, mb: 2 }}>Cover Image</Typography>
+              <Card className="p-3 mb-2 bg-white/5">
+                <Typography variant="h6" className="text-primary-light mb-2">Cover Image</Typography>
                 <VercelBlobImageUpload label="Upload Cover" />
               </Card>
             </Grid>
