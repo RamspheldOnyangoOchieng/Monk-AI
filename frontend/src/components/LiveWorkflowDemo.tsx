@@ -1,7 +1,6 @@
 import {
     CheckCircle,
     Code,
-    Error as ErrorIcon,
     ExpandMore,
     Lightbulb,
     PlayArrow,
@@ -156,7 +155,7 @@ const LiveWorkflowDemo: React.FC = () => {
   type AgentType = 'Ideation' | 'CodeOptimizer' | 'SecurityAnalyzer' | 'TestGenerator' | 'DocGenerator';
   type ColorMap = Record<AgentType, string>;
 
-  const agentColors: ColorMap = {
+  export const agentColors: ColorMap = {
     'Ideation': '#2196F3',
     'CodeOptimizer': '#FF9800',
     'SecurityAnalyzer': '#F44336',
@@ -344,20 +343,24 @@ const LiveWorkflowDemo: React.FC = () => {
   };
 
   const renderStepIcon = (step: WorkflowStep) => {
-    const agentKey = step.agent_name.replace(/\s+/g, '');
+    const agentKey = step.agent_name.replace(/\s+/g, '') as AgentType;
     const icon = (agentIcons as any)[agentKey] || '🔄';
+    const color = agentColors[agentKey] || '#757575';
     
-    // Handle different status states with proper icon styling
-    if (step.status === 'completed') {
-      return <CheckCircle color="success" />;
-    } else if (step.status === 'failed') {
-      return <ErrorIcon color="error" />;
-    } else if (step.status === 'running') {
-      return <CircularProgress size={20} />;
-    } else {
-      // For pending status, return emoji as JSX
-      return <span style={{ fontSize: '16px' }}>{icon}</span>;
-    }
+    return (
+      <Box sx={{ 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        width: 32,
+        height: 32,
+        borderRadius: '50%',
+        backgroundColor: color,
+        color: 'white'
+      }}>
+        {icon}
+      </Box>
+    );
   };
 
 

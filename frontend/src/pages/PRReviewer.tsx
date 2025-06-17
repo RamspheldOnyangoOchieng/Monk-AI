@@ -103,7 +103,7 @@ const PRReviewer: React.FC = () => {
   type SeverityType = 'high' | 'medium' | 'low' | 'default';
   type ColorType = 'error' | 'warning' | 'info' | 'default';
 
-  const getSeverityColor = (severity: string): ColorType => {
+  const getSeverityColor = (severity: SeverityType): ColorType => {
     switch (severity.toLowerCase()) {
       case 'high': return 'error';
       case 'medium': return 'warning';
@@ -308,7 +308,7 @@ const PRReviewer: React.FC = () => {
                       {getSeverityIcon(issue.severity)}
                       <Chip 
                         label={issue.severity}
-                        color={getSeverityColor(issue.severity) as any}
+                        color={getSeverityColor(issue.severity as SeverityType) as any}
                         size="small"
                       />
                       <Chip 
@@ -346,7 +346,7 @@ const PRReviewer: React.FC = () => {
                         {getSeverityIcon(concern.severity)}
                         <Chip 
                           label={concern.severity}
-                          color={getSeverityColor(concern.severity) as any}
+                          color={getSeverityColor(concern.severity as SeverityType) as any}
                           size="small"
                         />
                         <Chip 

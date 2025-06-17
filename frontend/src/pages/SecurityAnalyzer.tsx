@@ -253,7 +253,7 @@ const VulnerabilityCard = ({ vulnerability }: { vulnerability: Vulnerability }) 
         </Typography>
         <Chip 
           label={vulnerability.severity.toUpperCase()} 
-          color={getSeverityColor(vulnerability.severity) as any}
+          color={getSeverityColor(vulnerability.severity as SeverityType) as any}
           size="small"
         />
       </Box>
@@ -319,7 +319,7 @@ const VulnerabilityCard = ({ vulnerability }: { vulnerability: Vulnerability }) 
 type SeverityType = 'critical' | 'high' | 'medium' | 'low' | 'default';
 type ColorType = 'error' | 'warning' | 'info' | 'default';
 
-const getSeverityColor = (severity: string): ColorType => {
+const getSeverityColor = (severity: SeverityType): ColorType => {
   switch (severity.toLowerCase()) {
     case 'critical': return 'error';
     case 'high': return 'error';
