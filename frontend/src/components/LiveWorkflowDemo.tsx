@@ -1,59 +1,47 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  TextField,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  LinearProgress,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
-  Chip,
-  Paper,
-  Grid,
-  CircularProgress,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Alert,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Tab,
-  Tabs,
-  Container,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from '@mui/material';
-import {
-  PlayArrow,
-  Stop,
-  CheckCircle,
-  Error as ErrorIcon,
-  HourglassEmpty,
-  ExpandMore,
-  Security,
-  Science,
-  Description,
-  Lightbulb,
-  Speed,
-  Memory,
-  BugReport,
-  WebAsset,
-  Code,
-  RocketLaunch,
+    CheckCircle,
+    Code,
+    Error as ErrorIcon,
+    ExpandMore,
+    Lightbulb,
+    PlayArrow,
+    RocketLaunch,
+    Speed,
+    WebAsset
 } from '@mui/icons-material';
+import {
+    Accordion,
+    AccordionDetails,
+    AccordionSummary,
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    Container,
+    FormControl,
+    Grid,
+    InputLabel,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemText,
+    MenuItem,
+    Paper,
+    Select,
+    Step,
+    StepContent,
+    StepLabel,
+    Stepper,
+    Tab,
+    Tabs,
+    TextField,
+    Typography
+} from '@mui/material';
 import { styled } from '@mui/material/styles';
+import React, { useCallback, useEffect, useState } from 'react';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -165,7 +153,10 @@ const LiveWorkflowDemo: React.FC = () => {
     'CodeReviewer': '👀'
   };
 
-  const agentColors = {
+  type AgentType = 'Ideation' | 'CodeOptimizer' | 'SecurityAnalyzer' | 'TestGenerator' | 'DocGenerator';
+  type ColorMap = Record<AgentType, string>;
+
+  const agentColors: ColorMap = {
     'Ideation': '#2196F3',
     'CodeOptimizer': '#FF9800',
     'SecurityAnalyzer': '#F44336',

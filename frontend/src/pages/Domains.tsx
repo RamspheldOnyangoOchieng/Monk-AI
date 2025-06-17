@@ -53,7 +53,7 @@ const Domains: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900">{domain.name}</h3>
                 <p className="mt-1 text-sm text-gray-500">{domain.description}</p>
               </div>
-              <Button
+              <Button 
                 variant={domain.status === 'active' ? 'default' : 'secondary'}
                 onClick={() => handleStatusToggle(domain.id)}
               >

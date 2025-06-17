@@ -173,8 +173,8 @@ async def generate_technical_specs(request: TechnicalSpecsRequest, db: Session =
         ideation = Ideation(db_session=db)
         
         result = ideation.generate_technical_specs(request.project_scope)
-        return {
-            "status": "success",
+    return {
+        "status": "success",
             "technical_specs": result,
             "timestamp": datetime.now().isoformat()
         }
@@ -190,8 +190,8 @@ async def generate_user_stories(request: UserStoriesRequest, db: Session = Depen
         ideation = Ideation(db_session=db)
         
         result = ideation.generate_user_stories(request.project_scope)
-        return {
-            "status": "success",
+    return {
+        "status": "success",
             "user_stories": result,
             "timestamp": datetime.now().isoformat()
         }
@@ -210,8 +210,8 @@ async def generate_sprint_plan(request: SprintPlanRequest, db: Session = Depends
             user_stories=request.user_stories,
             sprint_count=request.sprint_count
         )
-        return {
-            "status": "success",
+    return {
+        "status": "success",
             "sprint_plan": result,
             "timestamp": datetime.now().isoformat()
         }
@@ -270,10 +270,10 @@ async def generate_docs(request: DocsGenerateRequest, db: Session = Depends(get_
         return result
     except Exception as e:
         print(f"Error in generate_docs endpoint: {e}")
-        return {
+    return {
             "status": "error",
             "documentation": {"overview": f"Error generating docs: {e}"}
-        }
+    }
 
 # TEST GENERATION ENDPOINT (for TestGenerator.tsx)
 @app.post("/api/generate-tests")
@@ -294,10 +294,10 @@ async def generate_tests(request: TestGenerateRequest, db: Session = Depends(get
         return result
     except Exception as e:
         print(f"Error in generate_tests: {e}")
-        return {
+    return {
             "status": "error",
             "message": f"Error generating tests: {e}"
-        }
+    }
 
 # SECURITY ANALYSIS ENDPOINT (for SecurityAnalyzer.tsx)
 @app.post("/api/analyze-security")
@@ -318,10 +318,10 @@ async def analyze_security(request: SecurityAnalyzeRequest, db: Session = Depend
         return result
     except Exception as e:
         print(f"Error in analyze_security: {e}")
-        return {
+    return {
             "status": "error",
             "message": f"Error during security analysis: {e}"
-        }
+    }
 
 # PR REVIEW ENDPOINT (for PRReviewer.tsx)
 @app.post("/api/review-pr")
@@ -346,7 +346,7 @@ async def review_pr(request: PRReviewRequest, db: Session = Depends(get_db)):
             impact_assessment = result.get("impact_assessment", {})
             review_score = result.get("review_score", {})
             
-            return {
+    return {
                 "review_summary": {
                     "overall_rating": review_score.get("overall_score", 0) / 10,  # Convert to 0-10 scale
                     "strengths": [
@@ -361,7 +361,7 @@ async def review_pr(request: PRReviewRequest, db: Session = Depends(get_db)):
                     "recommendations": review_data.get("best_practices", [])
                 },
                 "detailed_analysis": {
-                    "code_quality": {
+            "code_quality": {
                         "score": review_score.get("overall_score", 0),
                         "issues": [
                             {
@@ -415,7 +415,7 @@ async def review_pr(request: PRReviewRequest, db: Session = Depends(get_db)):
                     "implementation": "Create test files using pytest framework"
                 }
             ]
-        }
+    }
 
 # Health check for frontend
 @app.get("/api/health")

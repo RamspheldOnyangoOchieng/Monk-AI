@@ -1,31 +1,29 @@
-import React, { useState } from 'react';
 import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  TextField,
-  Button,
-  Alert,
-  Paper,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  CircularProgress,
-  Divider,
-  LinearProgress
-} from '@mui/material';
-import {
-  RateReview as ReviewIcon,
-  BugReport as IssueIcon,
-  CheckCircle as CheckIcon,
-  Warning as WarningIcon,
-  Error as ErrorIcon,
-  GitHub as GitHubIcon
+    CheckCircle as CheckIcon,
+    Error as ErrorIcon,
+    BugReport as IssueIcon,
+    RateReview as ReviewIcon,
+    Warning as WarningIcon
 } from '@mui/icons-material';
+import {
+    Alert,
+    Box,
+    Button,
+    Card,
+    CardContent,
+    Chip,
+    CircularProgress,
+    LinearProgress,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Paper,
+    TextField,
+    Typography
+} from '@mui/material';
 import axios from 'axios';
+import React, { useState } from 'react';
 
 interface PRReviewResult {
   review_summary: {
@@ -102,7 +100,10 @@ const PRReviewer: React.FC = () => {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
+  type SeverityType = 'high' | 'medium' | 'low' | 'default';
+  type ColorType = 'error' | 'warning' | 'info' | 'default';
+
+  const getSeverityColor = (severity: string): ColorType => {
     switch (severity.toLowerCase()) {
       case 'high': return 'error';
       case 'medium': return 'warning';
