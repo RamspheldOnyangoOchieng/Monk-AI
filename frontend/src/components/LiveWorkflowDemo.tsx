@@ -114,6 +114,17 @@ const AppPreviewContainer = styled(Paper)(({ theme }) => ({
   overflow: 'hidden',
 }));
 
+type AgentType = 'Ideation' | 'CodeOptimizer' | 'SecurityAnalyzer' | 'TestGenerator' | 'DocGenerator';
+type ColorMap = Record<AgentType, string>;
+
+const agentColors: ColorMap = {
+  'Ideation': '#2196F3',
+  'CodeOptimizer': '#FF9800',
+  'SecurityAnalyzer': '#F44336',
+  'TestGenerator': '#4CAF50',
+  'DocGenerator': '#9C27B0',
+};
+
 const LiveWorkflowDemo: React.FC = () => {
   const [workflowStatus, setWorkflowStatus] = useState<WorkflowStatus | null>(null);
   const [isRunning, setIsRunning] = useState(false);
@@ -150,17 +161,6 @@ const LiveWorkflowDemo: React.FC = () => {
     'TestGenerator': '🧪',
     'DocGenerator': '📝',
     'CodeReviewer': '👀'
-  };
-
-  type AgentType = 'Ideation' | 'CodeOptimizer' | 'SecurityAnalyzer' | 'TestGenerator' | 'DocGenerator';
-  type ColorMap = Record<AgentType, string>;
-
-  export const agentColors: ColorMap = {
-    'Ideation': '#2196F3',
-    'CodeOptimizer': '#FF9800',
-    'SecurityAnalyzer': '#F44336',
-    'TestGenerator': '#4CAF50',
-    'DocGenerator': '#9C27B0',
   };
 
   const pipelineSteps = {
