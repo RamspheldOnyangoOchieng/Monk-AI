@@ -1,17 +1,22 @@
 import os
+import os
 import re
 import json
 from typing import Dict, List, Any, Optional
-import openai
+import logging
+from sqlalchemy.orm import Session
+from app.core.ai_service import AIService
+from app.core.database import SessionLocal
+
+logger = logging.getLogger(__name__)
 
 class Ideation:
     """Agent for generating project ideas, specifications, user stories, and sprint plans."""
     
-    def __init__(self):
+    def __init__(self, db_session: Session = None):
         """Initialize the Ideation agent."""
-        self.openai_api_key = os.getenv("OPENAI_API_KEY")
-        self.anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
-        self.novita_api_key = os.getenv("NOVITA_API_KEY")
+        self.db_session = db_session or SessionLocal()
+        self.ai_service = AIService(session=self.db_session)
         
         # Define project scope templates
         self.scope_templates = {
@@ -23,12 +28,14 @@ class Ideation:
             "desktop_app": "A desktop application for Windows/Mac/Linux"
         }
         
-    async def generate_project_scope(self, description: str, template_key: Optional[str] = None) -> Dict[str, Any]:
+    async def generate_project_scope(self, description: str, template_key: Optional[str] = None, agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """Generate a project scope based on description and optional template.
         
         Args:
             description: User's project description
             template_key: Optional key for predefined template
+            agent_id: The ID of the agent
+            task_id: The ID of the task
             
         Returns:
             Project scope details
@@ -53,15 +60,53 @@ class Ideation:
         Format the response as a structured JSON object with these sections.
         """
         
-        # For now, return a mock response
-        # In production, this would call the AI model
-        return await self._get_mock_project_scope(description, template_key)
+        # Use AI service to generate project scope
+        try:
+            # NOTE: We need agent_id and task_id for logging, passing placeholders for now.
+            ai_result = await self.ai_service.generate_text(
+                prompt=prompt,
+                agent_id=agent_id,
+                task_id=task_id
+            )
+            
+            response_content = ai_result["content"]
+            
+            # Try to parse JSON response
+            try:
+                project_data = json.loads(response_content)
+            except json.JSONDecodeError:
+                # If not valid JSON, wrap in a basic structure
+                project_data = {
+                    "project_name": f"Generated Project for {description[:50]}...",
+                    "description": response_content,
+                    "objectives": ["Generated from AI response"],
+                    "target_audience": "To be defined",
+                    "key_features": ["Generated from AI response"],
+                    "success_metrics": ["To be defined"],
+                    "resources_needed": ["To be defined"]
+                }
+            
+            return project_data
+            
+        except Exception as e:
+            logger.error(f"Error generating project scope: {e}", exc_info=True)
+            # Fallback to mock data if AI service fails
+            mock_data = self._get_mock_project_scope(description, template_key)
+            mock_data["ai_status"] = {
+                "provider": "fallback",
+                "model": "mock",
+                "status": "fallback_used",
+                "error": str(e)
+            }
+            return mock_data
     
-    async def generate_technical_specs(self, project_scope: Dict[str, Any]) -> Dict[str, Any]:
+    async def generate_technical_specs(self, project_scope: Dict[str, Any], agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """Generate technical specifications based on project scope.
         
         Args:
             project_scope: The project scope details
+            agent_id: The ID of the agent
+            task_id: The ID of the task
             
         Returns:
             Technical specifications
@@ -82,14 +127,43 @@ class Ideation:
         Format the response as a structured JSON object with these sections.
         """
         
-        # For now, return a mock response
-        return await self._get_mock_technical_specs(project_scope)
+        # Use AI service to generate technical specifications
+        try:
+            ai_result = await self.ai_service.generate_text(
+                prompt=prompt,
+                agent_id=agent_id,
+                task_id=task_id
+            )
+
+            response_content = ai_result["content"]
+            
+            # Try to parse JSON response
+            try:
+                tech_specs = json.loads(response_content)
+                return tech_specs
+            except json.JSONDecodeError:
+                # If not valid JSON, wrap in a basic structure
+                return {
+                    "system_architecture": response_content,
+                    "data_models": "Generated from AI response",
+                    "api_endpoints": "Generated from AI response",
+                    "third_party_integrations": "Generated from AI response",
+                    "security_considerations": "Generated from AI response",
+                    "scalability_plans": "Generated from AI response",
+                    "technology_stack": "Generated from AI response",
+                }
+        except Exception as e:
+            logger.error(f"Error generating technical specs: {e}", exc_info=True)
+            # Re-raise exception to be handled by orchestrator
+            raise Exception(f"Error generating technical specs: {str(e)}")
     
-    async def generate_user_stories(self, project_scope: Dict[str, Any]) -> List[Dict[str, Any]]:
+    async def generate_user_stories(self, project_scope: Dict[str, Any], agent_id: int = 1, task_id: int = 1) -> List[Dict[str, Any]]:
         """Generate user stories based on project scope.
         
         Args:
             project_scope: The project scope details
+            agent_id: The ID of the agent
+            task_id: The ID of the task
             
         Returns:
             List of user stories
@@ -112,15 +186,42 @@ class Ideation:
         Format the response as a JSON array of user story objects.
         """
         
-        # For now, return a mock response
-        return await self._get_mock_user_stories(project_scope)
+        # Use AI service to generate user stories
+        try:
+            ai_result = await self.ai_service.generate_text(
+                prompt=prompt,
+                agent_id=agent_id,
+                task_id=task_id
+            )
+
+            response_content = ai_result["content"]
+            
+            # Try to parse JSON response
+            try:
+                return json.loads(response_content)
+            except json.JSONDecodeError:
+                # If not valid JSON, create a basic structure
+                return [{
+                    "id": 1,
+                    "title": "Generated User Story",
+                    "description": response_content,
+                    "priority": "Medium",
+                    "story_points": 3,
+                    "acceptance_criteria": ["Generated from AI response"]
+                }]
+        except Exception as e:
+            logger.error(f"Error generating user stories: {e}", exc_info=True)
+            # Re-raise exception
+            raise Exception(f"Error generating user stories: {str(e)}")
     
-    async def generate_sprint_plan(self, user_stories: List[Dict[str, Any]], sprint_count: int = 3) -> List[Dict[str, Any]]:
+    async def generate_sprint_plan(self, user_stories: List[Dict[str, Any]], sprint_count: int = 3, agent_id: int = 1, task_id: int = 1) -> List[Dict[str, Any]]:
         """Generate sprint plan based on user stories.
         
         Args:
             user_stories: List of user stories
             sprint_count: Number of sprints to plan
+            agent_id: The ID of the agent
+            task_id: The ID of the task
             
         Returns:
             Sprint plan with stories assigned to sprints
@@ -129,19 +230,39 @@ class Ideation:
         Generate a sprint plan for {sprint_count} sprints based on these user stories:
         {json.dumps(user_stories, indent=2)}
         
-        For each sprint, include:
-        1. Sprint goal
-        2. User stories assigned (consider dependencies and priorities)
-        3. Total story points
-        4. Key deliverables
+        The plan should include:
+        - A list of sprints, each with a goal
+        - User stories assigned to each sprint
         
         Format the response as a JSON array of sprint objects.
         """
         
-        # For now, return a mock response
-        return await self._get_mock_sprint_plan(user_stories, sprint_count)
+        # Use AI service to generate sprint plan
+        try:
+            ai_result = await self.ai_service.generate_text(
+                prompt=prompt,
+                agent_id=agent_id,
+                task_id=task_id,
+            )
+
+            response_content = ai_result["content"]
+
+            # Try to parse JSON response
+            try:
+                return json.loads(response_content)
+            except json.JSONDecodeError:
+                # If not valid JSON, create a basic structure
+                return [{
+                    "sprint": 1,
+                    "goal": "Initial setup and core features",
+                    "user_stories": [user_stories[0] if user_stories else {"title": "Sample Story"}]
+                }]
+        except Exception as e:
+            logger.error(f"Error generating sprint plan: {e}", exc_info=True)
+            # Re-raise exception
+            raise Exception(f"Error generating sprint plan: {str(e)}")
     
-    async def _get_mock_project_scope(self, description: str, template_key: Optional[str] = None) -> Dict[str, Any]:
+    def _get_mock_project_scope(self, description: str, template_key: Optional[str] = None) -> Dict[str, Any]:
         """Generate a mock project scope for development purposes."""
         template_type = template_key if template_key else "web_app"
         
@@ -232,7 +353,7 @@ class Ideation:
                 ]
             }
     
-    async def _get_mock_technical_specs(self, project_scope: Dict[str, Any]) -> Dict[str, Any]:
+    def _get_mock_technical_specs(self, project_scope: Dict[str, Any]) -> Dict[str, Any]:
         """Generate mock technical specifications for development purposes."""
         is_ecommerce = any("e-commerce" in str(value).lower() or "shop" in str(value).lower() 
                           for value in project_scope.values() if isinstance(value, (str, list)))
@@ -443,7 +564,7 @@ class Ideation:
                 }
             }
     
-    async def _get_mock_user_stories(self, project_scope: Dict[str, Any]) -> List[Dict[str, Any]]:
+    def _get_mock_user_stories(self, project_scope: Dict[str, Any]) -> List[Dict[str, Any]]:
         """Generate mock user stories for development purposes."""
         is_ecommerce = any("e-commerce" in str(value).lower() or "shop" in str(value).lower() 
                           for value in project_scope.values() if isinstance(value, (str, list)))
@@ -735,7 +856,7 @@ class Ideation:
                 }
             ]
     
-    async def _get_mock_sprint_plan(self, user_stories: List[Dict[str, Any]], sprint_count: int = 3) -> List[Dict[str, Any]]:
+    def _get_mock_sprint_plan(self, user_stories: List[Dict[str, Any]], sprint_count: int = 3) -> List[Dict[str, Any]]:
         """Generate a mock sprint plan for development purposes."""
         # Sort stories by priority and points
         high_priority = [story for story in user_stories if story["priority"] == "High"]

@@ -2,14 +2,14 @@ import {
     Alert,
     Box,
     Button,
+    Checkbox,
     Chip,
     CircularProgress,
     Container,
     Divider,
     FormControl,
-    FormGroup,
     FormControlLabel,
-    Checkbox,
+    FormGroup,
     InputLabel,
     MenuItem,
     Paper,
@@ -104,22 +104,6 @@ const SecurityAnalyzer = () => {
       console.error('Error analyzing code security:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  // Helper function to get color based on severity
-  const getSeverityColor = (severity: string) => {
-    switch (severity.toLowerCase()) {
-      case 'critical':
-        return 'error';
-      case 'high':
-        return 'error';
-      case 'medium':
-        return 'warning';
-      case 'low':
-        return 'info';
-      default:
-        return 'default';
     }
   };
 
@@ -269,7 +253,7 @@ const VulnerabilityCard = ({ vulnerability }: { vulnerability: Vulnerability }) 
         </Typography>
         <Chip 
           label={vulnerability.severity.toUpperCase()} 
-          color={getSeverityColor(vulnerability.severity) as any}
+          color={getSeverityColor(vulnerability.severity as SeverityType) as any}
           size="small"
         />
       </Box>
@@ -332,19 +316,16 @@ const VulnerabilityCard = ({ vulnerability }: { vulnerability: Vulnerability }) 
   );
 };
 
-// Helper function to get color based on severity
-const getSeverityColor = (severity: string) => {
+type SeverityType = 'critical' | 'high' | 'medium' | 'low' | 'default';
+type ColorType = 'error' | 'warning' | 'info' | 'default';
+
+const getSeverityColor = (severity: SeverityType): ColorType => {
   switch (severity.toLowerCase()) {
-    case 'critical':
-      return 'error';
-    case 'high':
-      return 'error';
-    case 'medium':
-      return 'warning';
-    case 'low':
-      return 'info';
-    default:
-      return 'default';
+    case 'critical': return 'error';
+    case 'high': return 'error';
+    case 'medium': return 'warning';
+    case 'low': return 'info';
+    default: return 'default';
   }
 };
 

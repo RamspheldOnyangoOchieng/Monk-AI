@@ -1,15 +1,17 @@
-# TraeDevMate - AI Pair Programmer & Code Reviewer
+# TraeDevMate - AI Pair Programmer & Code Reviewer & Deployment Master
 
-TraeDevMate is an intelligent multi-agent system that helps developers with code review, documentation generation, and test writing. Built with Trae AI IDE and integrated with Novita.ai for enhanced capabilities.
+Monk-AI is an intelligent multi-agent system that helps developers with code review, documentation generation, and test writing. Built with Trae AI IDE and integrated with Novita.ai for enhanced capabilities.
 
 
 ## Features
 
-- 🤖 Multi-agent system for different development tasks
-- 📝 Automated PR reviews and suggestions
-- 📚 Documentation generation
-- 🧪 Test case generation
-- 🔍 Code analysis and improvement suggestions
+- Multi-agent system for different development tasks
+- Automated PR reviews and suggestions
+- Documentation generation
+- Test case generation
+-  Code analysis and improvement suggestions
+- Context-Aware AI Dev Mentor (Auto-Learning Agent)
+- Secure Code Copilot with Auto-Threat Modeling
 
 ## Tech Stack
 

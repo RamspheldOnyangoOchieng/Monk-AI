@@ -1,23 +1,26 @@
-from typing import Dict, Any
+from typing import Dict, Any, List
 import os
-from openai import OpenAI
-from anthropic import Anthropic
+import re
+from sqlalchemy.orm import Session
+from app.core.ai_service import AIService
+from app.core.database import SessionLocal
 
 class DocGenerator:
-    def __init__(self):
-        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-        self.anthropic_client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    def __init__(self, db_session: Session = None):
+        """Initialize the DocGenerator agent."""
+        self.db_session = db_session or SessionLocal()
+        self.ai_service = AIService(session=self.db_session)
 
-    async def generate_docs(self, code: str, language: str, context: str = None) -> Dict[str, Any]:
+    async def generate_docs(self, code: str, language: str, context: str = None, agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """
         Generate documentation for the provided code.
         """
         try:
             # Analyze code structure
-            code_analysis = await self._analyze_code(code, language)
+            code_analysis = await self._analyze_code(code, language, agent_id=agent_id, task_id=task_id)
             
             # Generate documentation
-            documentation = await self._generate_documentation(code_analysis, context)
+            documentation = await self._generate_documentation(code_analysis, context, agent_id=agent_id, task_id=task_id)
             
             return {
                 "status": "success",
@@ -31,83 +34,85 @@ class DocGenerator:
         except Exception as e:
             raise Exception(f"Error generating documentation: {str(e)}")
 
-    async def _analyze_code(self, code: str, language: str) -> Dict[str, Any]:
+    async def _analyze_code(self, code: str, language: str, agent_id: int, task_id: int) -> Dict[str, Any]:
         """
-        Analyze code structure using AI models.
+        Analyze the code structure and identify key components.
         """
-        # Use Claude for code analysis
-        analysis_prompt = f"""
-        Analyze the following {language} code and identify:
-        1. Main functions and their purposes
-        2. Classes and their relationships
-        3. Key algorithms and patterns
-        4. Dependencies and imports
-        5. Entry points and main flow
-        
-        Code:
-        {code}
-        """
-        
-        response = await self.anthropic_client.messages.create(
-            model="claude-3-opus-20240229",
-            max_tokens=1000,
-            messages=[{
-                "role": "user",
-                "content": analysis_prompt
-            }]
-        )
-        
-        return {
-            "analysis": response.content,
-            "raw_code": code
-        }
+        # Use centralized AI service
+        try:
+            analysis_prompt = f"""
+            Analyze the following {language} code and identify:
+            1. Functions and their purposes
+            2. Classes and their methods
+            3. Key algorithms and data structures
+            4. Dependencies and imports
+            5. Main entry points
+            
+            Code:
+            {code}
+            """
+            
+            ai_result = await self.ai_service.generate_text(
+                prompt=analysis_prompt,
+                agent_id=agent_id,
+                task_id=task_id,
+                max_tokens=1000,
+                temperature=0.3
+            )
 
-    async def _generate_documentation(self, analysis: Dict[str, Any], context: str = None) -> Dict[str, Any]:
+            return {
+                "analysis": ai_result['content'],
+                "raw_code": code
+            }
+        except Exception as e:
+            # Re-raise exception to be handled by the main generate_docs function
+            raise Exception(f"Error analyzing code: {str(e)}")
+
+    async def _generate_documentation(self, analysis: Dict[str, Any], context: str = None, agent_id: int = 1, task_id: int = 1) -> Dict[str, Any]:
         """
         Generate comprehensive documentation based on code analysis.
         """
-        # Use GPT-4 for documentation generation
-        doc_prompt = f"""
-        Generate comprehensive documentation based on the following code analysis:
-        {analysis['analysis']}
-        
-        Additional context: {context if context else 'None provided'}
-        
-        Format the documentation as:
-        1. Overview and purpose
-        2. Function documentation (parameters, return values, examples)
-        3. Class documentation (properties, methods, inheritance)
-        4. Usage examples
-        5. Best practices and notes
-        """
-        
-        response = await self.openai_client.chat.completions.create(
-            model="gpt-4-turbo-preview",
-            messages=[{
-                "role": "user",
-                "content": doc_prompt
-            }],
-            temperature=0.7
-        )
-        
-        # Parse the response into structured documentation
-        doc_content = response.choices[0].message.content
-        
-        # Parse the response content
-        content = response.choices[0].message.content
-        
-        # Extract different sections from the response
-        overview = self._extract_overview(content)
-        functions = self._extract_functions(content)
-        classes = self._extract_classes(content)
-        examples = self._extract_examples(content)
-        
-        return {
-            "overview": overview,
-            "functions": functions,
-            "classes": classes,
-            "examples": examples
-        }
+        # Use centralized AI service
+        try:
+            doc_prompt = f"""
+            Generate comprehensive documentation based on the following code analysis:
+            {analysis['analysis']}
+            
+            Additional context: {context if context else 'None provided'}
+            
+            Format the documentation as:
+            1. Overview and purpose
+            2. Function documentation (parameters, return values, examples)
+            3. Class documentation (properties, methods, inheritance)
+            4. Usage examples
+            5. Best practices and notes
+            """
+            
+            ai_result = await self.ai_service.generate_text(
+                prompt=doc_prompt,
+                agent_id=agent_id,
+                task_id=task_id,
+                max_tokens=2000,
+                temperature=0.7
+            )
+            
+            content = ai_result['content']
+            
+            # Extract different sections from the response
+            overview = self._extract_overview(content)
+            functions = self._extract_functions(content)
+            classes = self._extract_classes(content)
+            examples = self._extract_examples(content)
+            
+            return {
+                "overview": overview,
+                "functions": functions,
+                "classes": classes,
+                "examples": examples
+            }
+        except Exception as e:
+            # Re-raise exception to be handled by the main generate_docs function
+            raise Exception(f"Error generating documentation content: {str(e)}")
     
     def _extract_overview(self, content: str) -> str:
         """Extract the overview section from the documentation content."""

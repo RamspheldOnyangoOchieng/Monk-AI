@@ -363,7 +363,7 @@ const Ideation = () => {
                 Goals and Objectives
               </Typography>
               <List dense>
-                {projectScope.goals_and_objectives.map((goal, index) => (
+                                      {projectScope?.goals_and_objectives?.map((goal, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={goal} />
                   </ListItem>
@@ -376,7 +376,7 @@ const Ideation = () => {
                 Key Features
               </Typography>
               <List dense>
-                {projectScope.key_features.map((feature, index) => (
+                                      {projectScope?.key_features?.map((feature, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={feature} />
                   </ListItem>
@@ -389,7 +389,7 @@ const Ideation = () => {
                 Technical Requirements
               </Typography>
               <List dense>
-                {projectScope.technical_requirements.map((req, index) => (
+                                      {projectScope?.technical_requirements?.map((req, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={req} />
                   </ListItem>
@@ -402,7 +402,7 @@ const Ideation = () => {
                 Constraints and Limitations
               </Typography>
               <List dense>
-                {projectScope.constraints_and_limitations.map((constraint, index) => (
+                                      {projectScope?.constraints_and_limitations?.map((constraint, index) => (
                   <ListItem key={index}>
                     <ListItemText primary={constraint} />
                   </ListItem>
@@ -422,7 +422,7 @@ const Ideation = () => {
                         Planning Phase
                       </Typography>
                       <Typography variant="h6">
-                        {projectScope.timeline_estimates.planning_phase}
+                        {projectScope?.timeline_estimates?.planning_phase || 'Not specified'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -434,7 +434,7 @@ const Ideation = () => {
                         Development Phase
                       </Typography>
                       <Typography variant="h6">
-                        {projectScope.timeline_estimates.development_phase}
+                        {projectScope?.timeline_estimates?.development_phase || 'Not specified'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -446,7 +446,7 @@ const Ideation = () => {
                         Testing Phase
                       </Typography>
                       <Typography variant="h6">
-                        {projectScope.timeline_estimates.testing_phase}
+                        {projectScope?.timeline_estimates?.testing_phase || 'Not specified'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -458,7 +458,7 @@ const Ideation = () => {
                         Deployment Phase
                       </Typography>
                       <Typography variant="h6">
-                        {projectScope.timeline_estimates.deployment_phase}
+                        {projectScope?.timeline_estimates?.deployment_phase || 'Not specified'}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -471,7 +471,7 @@ const Ideation = () => {
                 Resources Needed
               </Typography>
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                {projectScope.resources_needed.map((resource, index) => (
+                                      {projectScope?.resources_needed?.map((resource, index) => (
                   <Chip key={index} label={resource} />
                 ))}
               </Box>
@@ -530,7 +530,7 @@ const Ideation = () => {
                             Frontend
                           </Typography>
                           <Typography variant="body1">
-                            {technicalSpecs.system_architecture.frontend}
+                            {technicalSpecs?.system_architecture?.frontend || 'Not specified'}
                           </Typography>
                         </CardContent>
                       </Card>
@@ -542,7 +542,7 @@ const Ideation = () => {
                             Backend
                           </Typography>
                           <Typography variant="body1">
-                            {technicalSpecs.system_architecture.backend}
+                            {technicalSpecs?.system_architecture?.backend || 'Not specified'}
                           </Typography>
                         </CardContent>
                       </Card>
@@ -554,7 +554,7 @@ const Ideation = () => {
                             Database
                           </Typography>
                           <Typography variant="body1">
-                            {technicalSpecs.system_architecture.database}
+                            {technicalSpecs?.system_architecture?.database || 'Not specified'}
                           </Typography>
                         </CardContent>
                       </Card>
@@ -566,7 +566,7 @@ const Ideation = () => {
                             Caching
                           </Typography>
                           <Typography variant="body1">
-                            {technicalSpecs.system_architecture.caching}
+                            {technicalSpecs?.system_architecture?.caching || 'Not specified'}
                           </Typography>
                         </CardContent>
                       </Card>
@@ -578,7 +578,7 @@ const Ideation = () => {
                             Deployment
                           </Typography>
                           <Typography variant="body1">
-                            {technicalSpecs.system_architecture.deployment}
+                            {technicalSpecs?.system_architecture?.deployment || 'Not specified'}
                           </Typography>
                         </CardContent>
                       </Card>
@@ -590,14 +590,14 @@ const Ideation = () => {
                   <Typography variant="h6" gutterBottom>
                     Data Models
                   </Typography>
-                  {technicalSpecs.data_models.map((model, index) => (
+                  {technicalSpecs?.data_models?.map((model, index) => (
                     <Accordion key={index} sx={{ mb: 1 }}>
                       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Typography fontWeight="bold">{model.name}</Typography>
                       </AccordionSummary>
                       <AccordionDetails>
                         <List dense>
-                          {model.fields.map((field, fieldIndex) => (
+                          {model.fields?.map((field, fieldIndex) => (
                             <ListItem key={fieldIndex}>
                               <ListItemText 
                                 primary={`${field.name} (${field.type})`} 
@@ -615,13 +615,13 @@ const Ideation = () => {
                   <Typography variant="h6" gutterBottom>
                     API Endpoints
                   </Typography>
-                  {technicalSpecs.api_endpoints.map((endpoint, index) => (
+                  {technicalSpecs?.api_endpoints?.map((endpoint, index) => (
                     <Box key={index} sx={{ mb: 2, p: 2, border: 1, borderColor: 'divider', borderRadius: 1 }}>
                       <Typography fontWeight="bold" sx={{ mb: 1 }}>
                         {endpoint.path}
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-                        {endpoint.methods.map((method, methodIndex) => (
+                        {endpoint.methods?.map((method, methodIndex) => (
                           <Chip 
                             key={methodIndex} 
                             label={method} 
@@ -642,7 +642,7 @@ const Ideation = () => {
                     Third-Party Integrations
                   </Typography>
                   <Grid container spacing={2} sx={{ mb: 3 }}>
-                    {technicalSpecs.third_party_integrations.map((integration, index) => (
+                    {technicalSpecs?.third_party_integrations?.map((integration, index) => (
                       <Grid item xs={12} sm={6} md={4} key={index}>
                         <Card variant="outlined">
                           <CardContent>
@@ -669,7 +669,7 @@ const Ideation = () => {
                         Security Considerations
                       </Typography>
                       <List dense>
-                        {technicalSpecs.security_considerations.map((item, index) => (
+                        {technicalSpecs?.security_considerations?.map((item, index) => (
                           <ListItem key={index}>
                             <ListItemText primary={item} />
                           </ListItem>
@@ -681,7 +681,7 @@ const Ideation = () => {
                         Scalability Plans
                       </Typography>
                       <List dense>
-                        {technicalSpecs.scalability_plans.map((item, index) => (
+                        {technicalSpecs?.scalability_plans?.map((item, index) => (
                           <ListItem key={index}>
                             <ListItemText primary={item} />
                           </ListItem>
@@ -701,7 +701,7 @@ const Ideation = () => {
                         Frontend
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {technicalSpecs.technology_stack.frontend.map((tech, index) => (
+                        {technicalSpecs?.technology_stack?.frontend?.map((tech, index) => (
                           <Chip key={index} label={tech} size="small" />
                         ))}
                       </Box>
@@ -711,7 +711,7 @@ const Ideation = () => {
                         Backend
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {technicalSpecs.technology_stack.backend.map((tech, index) => (
+                        {technicalSpecs?.technology_stack?.backend?.map((tech, index) => (
                           <Chip key={index} label={tech} size="small" />
                         ))}
                       </Box>
@@ -721,7 +721,7 @@ const Ideation = () => {
                         Database
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {technicalSpecs.technology_stack.database.map((tech, index) => (
+                        {technicalSpecs?.technology_stack?.database?.map((tech, index) => (
                           <Chip key={index} label={tech} size="small" />
                         ))}
                       </Box>
@@ -731,7 +731,7 @@ const Ideation = () => {
                         DevOps
                       </Typography>
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                        {technicalSpecs.technology_stack.devops.map((tech, index) => (
+                        {technicalSpecs?.technology_stack?.devops?.map((tech, index) => (
                           <Chip key={index} label={tech} size="small" />
                         ))}
                       </Box>
@@ -792,7 +792,7 @@ const Ideation = () => {
                     </Typography>
                   </Box>
 
-                  {userStories.map((story, index) => (
+                  {userStories?.map((story, index) => (
                     <Card key={index} variant="outlined" sx={{ mb: 2 }}>
                       <CardContent>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
@@ -821,7 +821,7 @@ const Ideation = () => {
                           Acceptance Criteria:
                         </Typography>
                         <List dense>
-                          {story.acceptance_criteria.map((criteria, criteriaIndex) => (
+                                                      {story.acceptance_criteria?.map((criteria, criteriaIndex) => (
                             <ListItem key={criteriaIndex}>
                               <ListItemText primary={criteria} />
                             </ListItem>
@@ -891,7 +891,7 @@ const Ideation = () => {
                     Sprint Plan
                   </Typography>
 
-                  {sprintPlan.map((sprint, index) => (
+                  {sprintPlan?.map((sprint, index) => (
                     <Accordion key={index} defaultExpanded={index === 0} sx={{ mb: 2 }}>
                       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', pr: 2 }}>
@@ -914,7 +914,7 @@ const Ideation = () => {
                           Key Deliverables:
                         </Typography>
                         <List dense>
-                          {sprint.key_deliverables.map((deliverable, deliverableIndex) => (
+                                                        {sprint.key_deliverables?.map((deliverable, deliverableIndex) => (
                             <ListItem key={deliverableIndex}>
                               <ListItemText primary={deliverable} />
                             </ListItem>
@@ -924,7 +924,7 @@ const Ideation = () => {
                         <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
                           User Stories:
                         </Typography>
-                        {sprint.user_stories.map((story, storyIndex) => (
+                                                      {sprint.user_stories?.map((story, storyIndex) => (
                           <Card key={storyIndex} variant="outlined" sx={{ mb: 1 }}>
                             <CardContent sx={{ py: 1 }}>
                               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

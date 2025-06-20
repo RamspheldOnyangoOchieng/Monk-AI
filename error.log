@@ -1,0 +1,200 @@
+react-dom.development.js:29895 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+deprecations.ts:9 ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+warnOnce @ deprecations.ts:9
+deprecations.ts:9 ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+warnOnce @ deprecations.ts:9
+MultiAgentOrchestrator.tsx:345 Workflow started: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING
+MultiAgentOrchestrator.tsx:411 Real-time update: Objectagent_name: "Ideation & Planning"progress: 25status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_ideation_0"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Objectagent_name: "Code Generation"progress: 75status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Objectagent_name: "Code Generation"duration: 2progress: 100result: {agent_name: 'CodeGenerator', step_type: 'code_generation', generated_files: {…}, file_count: 4, primary_language: 'python', …}status: "completed"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1"type: "step_complete"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Objectagent_name: "Security Analysis"progress: 25status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: Objectagent_name: "Security Analysis"progress: 75status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event {isTrusted: true, type: 'error', target: EventSource, currentTarget: EventSource, eventPhase: 2, …}
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           Failed to load resource: net::ERR_INCOMPLETE_CHUNKED_ENCODING
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+[Violation] 'message' handler took <N>ms
+scheduler.development.js:517 [Violation] 'message' handler took 183ms
+scheduler.development.js:517 [Violation] 'message' handler took 210ms
+scheduler.development.js:517 [Violation] 'message' handler took 217ms
+scheduler.development.js:517 [Violation] 'message' handler took 156ms
+scheduler.development.js:517 [Violation] 'message' handler took 176ms
+scheduler.development.js:517 [Violation] 'message' handler took 192ms
+scheduler.development.js:517 [Violation] 'message' handler took 198ms
+scheduler.development.js:517 [Violation] 'message' handler took 179ms
+scheduler.development.js:517 [Violation] 'message' handler took 196ms
+scheduler.development.js:517 [Violation] 'message' handler took 191ms
+scheduler.development.js:517 [Violation] 'message' handler took 169ms
+scheduler.development.js:517 [Violation] 'message' handler took 183ms
+scheduler.development.js:517 [Violation] 'message' handler took 176ms
+scheduler.development.js:517 [Violation] 'message' handler took 186ms
+scheduler.development.js:517 [Violation] 'message' handler took 182ms
+scheduler.development.js:517 [Violation] 'message' handler took 152ms
+scheduler.development.js:517 [Violation] 'message' handler took 202ms
+scheduler.development.js:517 [Violation] 'message' handler took 171ms
+scheduler.development.js:517 [Violation] 'message' handler took 164ms
+scheduler.development.js:517 [Violation] 'message' handler took 172ms
+scheduler.development.js:517 [Violation] 'message' handler took 196ms
+scheduler.development.js:517 [Violation] 'message' handler took 153ms
+scheduler.development.js:517 [Violation] 'message' handler took 182ms
+scheduler.development.js:517 [Violation] 'message' handler took 155ms
+scheduler.development.js:517 [Violation] 'message' handler took 195ms
+scheduler.development.js:517 [Violation] 'message' handler took 195ms
+scheduler.development.js:517 [Violation] 'message' handler took 159ms
+scheduler.development.js:517 [Violation] 'message' handler took 203ms
+scheduler.development.js:517 [Violation] 'message' handler took 188ms
+scheduler.development.js:517 [Violation] 'message' handler took 154ms
+scheduler.development.js:517 [Violation] 'message' handler took 154ms
+scheduler.development.js:517 [Violation] 'message' handler took 215ms
+scheduler.development.js:517 [Violation] 'message' handler took 187ms
+scheduler.development.js:517 [Violation] 'message' handler took 167ms
+bundle.js:95809 [Violation] 'message' handler took 186ms
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'completed', result: {…}, progress: 100, …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}agent_name: "Code Generation"progress: 75status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'completed', result: {…}, progress: 100, …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event {isTrusted: true, type: 'error', target: EventSource, currentTarget: EventSource, eventPhase: 2, …}
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           GET http://localhost:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2 net::ERR_INCOMPLETE_CHUNKED_ENCODING 200 (OK)
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'completed', result: {…}, progress: 100, …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'completed', result: {…}, progress: 100, …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event {isTrusted: true, type: 'error', target: EventSource, currentTarget: EventSource, eventPhase: 2, …}
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           GET http://localhost:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2 net::ERR_INCOMPLETE_CHUNKED_ENCODING 200 (OK)
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'completed', result: {…}, progress: 100, …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'completed', result: {…}, progress: 100, …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event {isTrusted: true, type: 'error', target: EventSource, currentTarget: EventSource, eventPhase: 2, …}
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           GET http://localhost:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2 net::ERR_INCOMPLETE_CHUNKED_ENCODING 200 (OK)
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}agent_name: "Ideation & Planning"progress: 25status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_ideation_0"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}agent_name: "Ideation & Planning"progress: 75status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_ideation_0"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'completed', result: {…}, progress: 100, …}agent_name: "Ideation & Planning"duration: 2progress: 100result: {agent_name: 'IdeationAgent', step_type: 'ideation', project_scope: {…}, technical_specs: {…}, user_stories: Array(10), …}status: "completed"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_ideation_0"type: "step_complete"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}agent_name: "Code Generation"progress: 75status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'completed', result: {…}, progress: 100, …}agent_name: "Code Generation"duration: 2progress: 100result: {agent_name: 'CodeGenerator', step_type: 'code_generation', generated_files: {…}, file_count: 4, primary_language: 'python', …}status: "completed"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1"type: "step_complete"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}agent_name: "Security Analysis"progress: 25status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_security_analysis_2', agent_name: 'Security Analysis', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:390 SSE connection error: Event {isTrusted: true, type: 'error', target: EventSource, currentTarget: EventSource, eventPhase: 2, …}isTrusted: truebubbles: falsecancelBubble: falsecancelable: falsecomposed: falsecurrentTarget: EventSource {url: 'http://localhost:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2', withCredentials: false, readyState: 0, onopen: null, onmessage: ƒ, …}defaultPrevented: falseeventPhase: 0returnValue: truesrcElement: EventSource {url: 'http://localhost:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2', withCredentials: false, readyState: 0, onopen: null, onmessage: ƒ, …}target: EventSource {url: 'http://localhost:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2', withCredentials: false, readyState: 0, onopen: null, onmessage: ƒ, …}timeStamp: 339470type: "error"[[Prototype]]: Event
+eventSource.onerror @ MultiAgentOrchestrator.tsx:390
+MultiAgentOrchestrator.tsx:398 SSE connection error, but still open - attempting to recover
+:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2:1 
+            
+            
+           GET http://localhost:8000/api/workflow/stream/98486839-2797-4fb6-933e-3cd131f759d2 net::ERR_INCOMPLETE_CHUNKED_ENCODING 200 (OK)
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}agent_name: "Ideation & Planning"progress: 25status: "running"step_id: "98486839-2797-4fb6-933e-3cd131f759d2_ideation_0"type: "step_update"workflow_id: "98486839-2797-4fb6-933e-3cd131f759d2"[[Prototype]]: Object
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'running', progress: 75, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_ideation_0', agent_name: 'Ideation & Planning', status: 'completed', result: {…}, progress: 100, …}
+MultiAgentOrchestrator.tsx:411 Real-time update: {step_id: '98486839-2797-4fb6-933e-3cd131f759d2_code_generation_1', agent_name: 'Code Generation', status: 'running', progress: 25, workflow_id: '98486839-2797-4fb6-933e-3cd131f759d2', …}

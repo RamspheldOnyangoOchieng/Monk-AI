@@ -1,0 +1,8 @@
+---
+description: When conducting a test cycle frontend and backend
+globs: 
+alwaysApply: false
+---
+
+
+So the test cycle will be: having all the front end presented (I have checked and it is ok) -> then check each agent page function  (python) with scirpt to check (check with OpenAI API: your-openai-api-key-here ) if possible provided with additional providers - gemini and openrouter (but you must check with context7 MCP, and use internet for browsing the accurate uses and document) - then check integration with front end - document test case on proper directories where you place your script -> making pull request as a cycle finish

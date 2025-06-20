@@ -1,0 +1,15 @@
+{
+  "timestamp": "2025-06-14T21:13:15.354251",
+  "steps": [
+    {
+      "step": "ai_service_test",
+      "status": "success",
+      "response_time_ms": 4538.64,
+      "provider": "openai",
+      "model": "gpt-4o",
+      "response_length": 53
+    }
+  ],
+  "success": false,
+  "error": "object dict can't be used in 'await' expression"
+}

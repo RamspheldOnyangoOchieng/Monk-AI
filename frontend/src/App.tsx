@@ -1,21 +1,11 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Container from '@mui/material/Container';
-import Link from '@mui/material/Link';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Dashboard from './pages/Dashboard';
-import PRReview from './pages/PRReview';
-import DocGenerator from './pages/DocGenerator';
-import TestGenerator from './pages/TestGenerator';
+import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import LiveWorkflowDemo from './components/LiveWorkflowDemo';
+import Navigation from './components/Navigation';
 import CodeOptimizer from './pages/CodeOptimizer';
-import SecurityAnalyzer from './pages/SecurityAnalyzer';
+import DocGenerator from './pages/DocGenerator';
+import Domains from './pages/Domains';
 import Ideation from './pages/Ideation';
+
 import Code from './components/codeEditor';
 const theme = createTheme({
   palette: {
@@ -94,6 +84,31 @@ function App() {
         </Box>
       </Router>
     </ThemeProvider>
+
+import PRReviewer from './pages/PRReviewer';
+import SecurityAnalyzer from './pages/SecurityAnalyzer';
+import TestGenerator from './pages/TestGenerator';
+
+function App() {
+  return (
+    <Router>
+      <div className="min-h-screen bg-gray-100">
+        <Navigation />
+        <main className="container mx-auto px-4 py-8">
+          <Routes>
+            <Route path="/" element={<LiveWorkflowDemo />} />
+            <Route path="/ideation" element={<Ideation />} />
+            <Route path="/code-optimizer" element={<CodeOptimizer />} />
+            <Route path="/doc-generator" element={<DocGenerator />} />
+            <Route path="/security-analyzer" element={<SecurityAnalyzer />} />
+            <Route path="/test-generator" element={<TestGenerator />} />
+            <Route path="/pr-reviewer" element={<PRReviewer />} />
+            <Route path="/domains" element={<Domains />} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
+
   );
 }
 
