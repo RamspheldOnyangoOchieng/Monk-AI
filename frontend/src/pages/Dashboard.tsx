@@ -4,7 +4,7 @@ import {
     Description as DescriptionIcon,
     Speed as SpeedIcon,
     Security as SecurityIcon,
-    Science as ScienceIcon,
+    // Science as ScienceIcon,
     LightbulbOutlined as IdeaIcon,
     TrendingUp as TrendingUpIcon,
     AccessTime as TimeIcon,
