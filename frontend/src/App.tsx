@@ -16,7 +16,7 @@ import TestGenerator from './pages/TestGenerator';
 import CodeOptimizer from './pages/CodeOptimizer';
 import SecurityAnalyzer from './pages/SecurityAnalyzer';
 import Ideation from './pages/Ideation';
-
+import Code from './components/codeEditor';
 const theme = createTheme({
   palette: {
     mode: 'dark',
@@ -61,6 +61,9 @@ function App() {
               <Button color="inherit" component={Link} href="/ideation">
                 Ideation
               </Button>
+              <Button color="inherit" component={Link} href="/ide">
+                Code Editor
+              </Button>
             </Toolbar>
           </AppBar>
 
@@ -72,7 +75,8 @@ function App() {
               <Route path="/test-generator" element={<TestGenerator />} />
               <Route path="/code-optimizer" element={<CodeOptimizer />} />
               <Route path="/security-analyzer" element={<SecurityAnalyzer />} />
-          <Route path="/ideation" element={<Ideation />} />
+              <Route path="/ideation" element={<Ideation />} />
+              <Route path="/ide" element={<Code />} />
             </Routes>
           </Container>
 
